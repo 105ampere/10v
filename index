@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#E9E9E6">
+<style>
+:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.5 system-ui,sans-serif;background:#f7f7f5}
+img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>유럽 출장 스케줄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Sans+KR:wght@500;600;700&display=swap">
+<style>
+:root{
+  --page:#E9E9E6; --sheet:#FFFFFF; --band:#F0F1F2; --band-2:#F7F7F6;
+  --ink:#111111; --ink-2:#161616; --ink-3:#2B2B2B; --ph:#6F6F6F;
+  --rule:#161616; --line:#DDDEDD; --line-2:#EBECEB;
+  --blue:#173C86; --red:#B81C1C;
+  --chain:#173C86; --chain-field:rgba(0,0,0,.28);
+  --flight-bg:#E9F1FB; --flight-line:#C9DCF2;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 10px 24px rgba(0,0,0,.06);
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
+  --display:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0C0D0E; --sheet:#171A1C; --band:#1F2326; --band-2:#1B1F21;
+    --ink:#F1F3F3; --ink-2:#E6E9E9; --ink-3:#D2D6D7; --ph:#8C9396;
+    --rule:#C9CFD1; --line:#2A3033; --line-2:#232829;
+    --blue:#7FA9F0; --red:#F0796F;
+    --chain:#23539F; --chain-field:rgba(0,0,0,.32);
+    --flight-bg:#15222F; --flight-line:#27384A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0C0D0E; --sheet:#171A1C; --band:#1F2326; --band-2:#1B1F21;
+  --ink:#F1F3F3; --ink-2:#E6E9E9; --ink-3:#D2D6D7; --ph:#8C9396;
+  --rule:#C9CFD1; --line:#2A3033; --line-2:#232829;
+  --blue:#7FA9F0; --red:#F0796F;
+  --chain:#23539F; --chain-field:rgba(0,0,0,.32);
+  --flight-bg:#15222F; --flight-line:#27384A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+input,textarea,select,button{min-width:0; max-width:100%; font-family:inherit; color:inherit}
+body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans); font-size:15.5px; line-height:1.5; -webkit-text-size-adjust:100%}
+.sheet{max-width:860px; margin:0 auto; background:var(--sheet); box-shadow:var(--shadow); padding:0 22px 40px}
+@media (max-width:640px){ .sheet{padding:0 14px 32px} }
+
+/* ---------- document head ---------- */
+.dochead{padding:26px 0 14px; text-align:center; position:relative}
+.dochead h1{
+  margin:0; font-family:var(--display); font-size:clamp(30px,6vw,42px); font-weight:700;
+  letter-spacing:.14em; line-height:1.1; text-wrap:balance;
+}
+.dochead h1 input{
+  width:100%; border:0; background:transparent; text-align:center; font:inherit; letter-spacing:inherit;
+}
+.dochead .range{
+  margin:4px 0 0; font-family:var(--mono); font-size:13px; font-weight:600;
+  letter-spacing:.22em; color:var(--ink-2);
+}
+.metabar{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px; justify-content:center;
+  margin-top:14px; padding:9px 12px; border-top:1px solid var(--line-2); border-bottom:1px solid var(--line-2);
+}
+.ghost{
+  appearance:none; border:1px solid var(--line); background:transparent; color:var(--ink-2);
+  border-radius:7px; font-size:12.5px; font-weight:600; padding:5px 11px; cursor:pointer;
+}
+.ghost:hover{border-color:var(--ink-3); color:var(--ink)}
+.ghost:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+
+/* ---------- day ---------- */
+.day{margin-top:30px; break-inside:avoid}
+.dayhead{display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; border-bottom:2.5px solid var(--rule); padding-bottom:5px}
+.bigdate{font-family:var(--display); font-size:33px; font-weight:700; line-height:1; letter-spacing:-.01em; font-variant-numeric:tabular-nums}
+.dow{font-family:var(--display); font-size:18px; font-weight:500; line-height:1.6; letter-spacing:.02em}
+.dayhead .today{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; color:#fff; background:var(--blue);
+  border-radius:3px; padding:2px 6px; margin-bottom:5px;
+}
+.wxwrap{margin-left:auto; display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; padding-bottom:3px}
+.wx{display:flex; align-items:center; gap:5px; font-size:12.5px; color:var(--ink-2); white-space:nowrap}
+.wx .t{font-family:var(--mono); font-weight:600; font-variant-numeric:tabular-nums}
+.wx .t.lo{color:var(--blue)} .wx .t.hi{color:var(--red)}
+.wx input.deg{width:30px; border:0; background:transparent; text-align:right; font:inherit; color:inherit}
+.wx input.city{width:56px; border:0; background:transparent; font-size:12.5px; color:var(--ink-2)}
+.wx select.ic{appearance:none; border:0; background:transparent; width:26px; cursor:pointer; color:transparent; position:absolute; inset:0; opacity:0}
+.wx .icbox{position:relative; width:24px; height:22px; color:var(--ink-2); display:flex; align-items:center; justify-content:center}
+.wx .icbox svg{width:22px; height:22px}
+.wx .x{border:0;background:transparent;color:var(--ink-3);cursor:pointer;font-size:13px;line-height:1;opacity:.5;padding:0 2px}
+.wx .x:hover{opacity:1; color:var(--red)}
+.addwx{border:0; background:transparent; color:var(--ink-2); font-size:12px; cursor:pointer; padding:2px 4px}
+.addwx:hover{color:var(--blue)}
+.dayx{border:0; background:transparent; color:var(--ph); cursor:pointer; font-size:12px; padding:2px 5px; margin-bottom:6px; border-radius:4px}
+.dayx:hover{color:var(--red); background:var(--band)}
+.daynote{width:100%; border:0; background:transparent; color:var(--red); font-size:12.5px; text-align:right; padding:4px 0 0}
+.daynote::placeholder{color:var(--ph); opacity:1}
+.daynote:focus{outline:none}
+
+/* ---------- blocks ---------- */
+.blk{position:relative; margin-top:10px; break-inside:avoid}
+.blktools{
+  position:absolute; top:2px; right:2px; display:flex; gap:1px; opacity:0; transition:opacity .12s;
+  background:var(--sheet); border-radius:6px; z-index:2;
+}
+.blk:hover .blktools, .blk:focus-within .blktools{opacity:1}
+.blktools button{
+  appearance:none; border:0; background:transparent; color:var(--ink-3); cursor:pointer;
+  font-size:12px; line-height:1; padding:4px 5px; border-radius:4px;
+}
+.blktools button:hover{background:var(--band); color:var(--ink)}
+.blktools button.rm:hover{color:var(--red)}
+@media (max-width:640px){ .blktools{opacity:1} }
+
+/* flight */
+.flight{background:var(--flight-bg); border-radius:6px; padding:12px 14px; display:grid; grid-template-columns:1fr 30px 1fr 1.2fr; gap:6px 11px; align-items:center}
+.flight .port{text-align:center; min-width:0}
+.flight .ap{border:0; background:transparent; width:100%; text-align:center; font-size:16px; font-weight:700; letter-spacing:.04em; resize:none; overflow:hidden; line-height:1.3; font-family:var(--sans)}
+.flight .tmrow{display:flex; align-items:baseline; justify-content:center; gap:4px; color:var(--blue); font-family:var(--mono); font-weight:600; font-size:14.5px}
+.flight .dpfx{font-size:12.5px}
+.flight .tm{border:0; background:transparent; width:52px; text-align:center; font:inherit; color:inherit; font-variant-numeric:tabular-nums}
+.flight .tag{font-size:12px}
+.flight .term{display:flex; align-items:center; justify-content:center; gap:4px; font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--ink-2); text-transform:uppercase}
+.flight .term input{border:0; background:transparent; width:42px; font:inherit; color:var(--ink-2); text-align:left}
+.flight .plane{display:flex; align-items:center; justify-content:center; color:var(--ink)}
+.flight .plane svg{width:30px; height:18px}  /* viewBox 40x24 과 같은 비율 */
+.flight .meta{border-left:1px solid var(--flight-line); padding-left:12px; min-width:0}
+.flight .meta input, .flight .meta textarea{border:0; background:transparent; width:100%; font-size:13px; resize:none; overflow:hidden; line-height:1.45; font-family:var(--sans)}
+.flight .meta .no{font-family:var(--mono); font-weight:600; font-size:13.5px}
+.flight .meta .dur{color:var(--ink-2); font-size:13px}
+.nextday{display:inline-flex; align-items:center; gap:3px; font-size:11.5px; color:var(--ink-2); cursor:pointer; font-family:var(--sans)}
+.nextday input{accent-color:var(--blue)}
+@media (max-width:700px){
+  .flight{grid-template-columns:1fr 30px 1fr; }
+  .flight .meta{grid-column:1 / -1; border-left:0; border-top:1px solid var(--flight-line); padding:8px 0 0; margin-top:2px}
+}
+
+/* move / transit */
+.move{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; padding:4px 2px}
+.move .ic{flex:none; color:var(--ink-2); display:flex; align-items:center}
+.move .ic svg{width:20px; height:20px}
+.move .txt{flex:1 1 220px; border:0; background:transparent; font-size:15px}
+.move select.kind{appearance:none; border:1px solid var(--line); border-radius:6px; background:transparent; font-size:12px; color:var(--ink-2); padding:3px 7px; cursor:pointer}
+.chain{margin-top:6px; border-radius:5px; padding:9px 12px; background:var(--chain); color:#FFFFFF; font-size:13.5px; line-height:1.85; letter-spacing:.01em; width:100%}
+.chain .sep{opacity:.65; padding:0 5px; font-weight:700}
+.chain textarea{width:100%; border:0; background:transparent; color:#FFFFFF; font:inherit; resize:none; line-height:1.7}
+.chain textarea::placeholder{color:rgba(255,255,255,.82); opacity:1}
+.chain .lab{display:flex; align-items:center; gap:9px; margin-bottom:6px; font-size:12px; letter-spacing:.01em; color:#FFFFFF}
+.chain .lab input{border:1px solid rgba(255,255,255,.45); background:var(--chain-field); color:#FFFFFF; border-radius:4px; padding:3px 8px; width:112px; font:inherit; text-align:center}
+.chain .lab input::placeholder{color:rgba(255,255,255,.85); opacity:1}
+.chainview{display:flex; flex-wrap:wrap; align-items:baseline}
+
+/* place / stay */
+.place{display:grid; grid-template-columns:236px minmax(0,1fr) 104px; gap:18px; align-items:center; padding:14px 2px; border-top:1px solid var(--line-2)}
+.photos{display:grid; grid-template-columns:1fr 1fr; gap:10px; min-width:0}
+.shot{
+  position:relative; aspect-ratio:1/1; border-radius:10px; overflow:hidden;
+  background:var(--band); border:1px solid var(--line-2);
+  display:flex; align-items:center; justify-content:center;
+}
+.shot img{width:100%; height:100%; object-fit:cover; display:block}
+.shot .ph{color:var(--ink-3); font-size:10.5px; text-align:center; padding:0 6px; line-height:1.35}
+.shot input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer}
+.shot .clr{position:absolute; top:4px; right:4px; border:0; background:rgba(0,0,0,.5); color:#fff; border-radius:50%; width:20px; height:20px; font-size:12px; line-height:1; cursor:pointer; display:none}
+.shot.has .clr{display:block}
+.pinfo{min-width:0; display:flex; flex-direction:column; gap:1px}
+.pinfo input, .pinfo textarea{border:0; background:transparent; width:100%; resize:none}
+.pinfo .en{font-size:15.5px; font-weight:700}
+.pinfo .ko{font-size:14px; font-weight:600; color:var(--ink)}
+.pinfo .row{display:flex; align-items:flex-start; gap:6px; color:var(--ink-2); font-size:14px}
+.pinfo .row svg{width:15px; height:15px; flex:none; margin-top:3px; color:var(--ink-2)}
+.pinfo .resv{color:var(--red); font-size:14px; font-weight:600}
+.qrbox{text-align:center}
+.qrbox canvas{display:block; margin:0 auto; border-radius:3px; background:#fff}
+.qrbox .empty{
+  width:96px; height:96px; margin:0 auto; border:1px dashed var(--line); border-radius:5px;
+  display:flex; align-items:center; justify-content:center; color:var(--ink-3); font-size:10.5px;
+  text-align:center; padding:6px; line-height:1.3;
+}
+.qrbox .cap{border:0; background:transparent; width:100%; text-align:center; font-size:12.5px; font-weight:600; margin-top:4px}
+.qrbox .url{border:0; background:transparent; width:100%; text-align:center; font-size:10.5px; color:var(--ink-2); font-family:var(--mono); margin-top:2px}
+@media (max-width:640px){
+  .place{grid-template-columns:minmax(0,1fr); gap:10px}
+  .photos{grid-column:1 / -1; gap:8px}
+  .qrbox{grid-column:1 / -1; display:flex; align-items:center; gap:10px; text-align:left}
+  .qrbox canvas, .qrbox .empty{margin:0}
+  .qrbox .capwrap{flex:1}
+  .qrbox .cap, .qrbox .url{text-align:left}
+}
+
+/* note */
+.note{display:flex; align-items:flex-start; gap:7px; padding:5px 2px}
+.note .mk{color:var(--ink-2); font-size:13.5px; padding-top:3px}
+.note textarea{flex:1; border:0; background:transparent; resize:none; font-size:14.5px; line-height:1.55}
+
+/* add block */
+.addrow{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; padding-top:2px}
+.addrow button{
+  appearance:none; border:1px dashed var(--line); background:transparent; color:var(--ink-2);
+  border-radius:7px; font-size:12.5px; padding:5px 11px; cursor:pointer;
+}
+.addrow button:hover{border-color:var(--blue); color:var(--blue)}
+
+input:focus, textarea:focus, select:focus{outline:none}
+input:focus-visible, textarea:focus-visible{outline:2px solid var(--blue); outline-offset:1px; border-radius:2px}
+input::placeholder, textarea::placeholder{color:var(--ph); opacity:1}
+
+/* ---------- panel ---------- */
+
+.panel{margin-top:22px; border:1px solid var(--line); border-radius:9px; background:var(--band-2)}
+.panel summary{cursor:pointer; padding:11px 14px; font-size:13px; font-weight:600; color:var(--ink-2)}
+.panel summary::-webkit-details-marker{display:none}
+.panel summary::before{content:"＋ "; color:var(--ink-3)}
+.panel[open] summary::before{content:"－ "}
+.panel .pbody{padding:0 14px 14px}
+.panel p{font-size:13px; color:var(--ink-2); line-height:1.65}
+.btnrow{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+.rangerow{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:10px 0 2px; font-size:13px; color:var(--ink-2)}
+.rangerow input[type=date]{border:1px solid var(--line); border-radius:6px; background:var(--sheet); padding:5px 8px; font-family:var(--mono); font-size:13px; margin-left:6px}
+.btn{appearance:none; cursor:pointer; font-size:13px; font-weight:600; padding:8px 13px; border-radius:7px; border:1px solid var(--line); background:var(--sheet)}
+.btn.primary{background:var(--blue); border-color:var(--blue); color:#fff}
+textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border:1px solid var(--line); background:var(--sheet); color:var(--ink-2); font-family:var(--mono); font-size:11px; line-height:1.5}
+.status{font-size:12px; color:var(--ink-2); font-family:var(--mono); margin-top:6px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+@media print{
+  body{background:#fff}
+  .sheet{box-shadow:none; max-width:none; padding:0}
+  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url{display:none!important}
+  .day{margin-top:20px}
+  .flight, .chain, .place, .refcard{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  @page{size:A4; margin:12mm}
+}
+</style>
+
+</head>
+<body>
+<div class="sheet">
+  <header class="dochead">
+    <h1><input id="docTitle" aria-label="문서 제목" value="유럽 출장 스케줄"></h1>
+    <p class="range" id="docRange">2026.09.29 ~ 2026.10.14</p>
+    <div class="metabar">
+      <button class="ghost" id="btnPrint">인쇄 · PDF</button>
+      <button class="ghost" id="btnPanel">저장 · 백업</button>
+    </div>
+  </header>
+
+  <main id="days"></main>
+
+
+  <details class="panel" id="panel">
+    <summary>저장 · 백업 · 오프라인 사용법</summary>
+    <div class="pbody">
+      <p>입력한 내용과 사진은 <b>지금 보고 있는 화면 안에</b>만 저장됩니다. <b>웹 링크와 내려받은 HTML 파일은 저장 공간이 서로 다르고, 새로 내려받은 파일도 빈 상태로 열립니다.</b> 그래서 <b>한 곳을 정해 계속 쓰시고</b>, 옮길 때는 아래 백업 글자를 복사해서 붙여넣어 주세요. 비행기나 현지에서 데이터 없이 보시려면 출국 전에 그 화면을 휴대폰 브라우저에서 <b>홈 화면에 추가</b>해 두시면 됩니다. QR코드는 인터넷 없이 이 화면에서 직접 만들어집니다.</p>
+      <p><b>다른 화면으로 옮기는 법</b> — ① 내용이 들어 있는 화면에서 이 칸의 글자를 <b>복사</b> → ② 옮길 화면을 열고 아래 칸에 <b>붙여넣기</b> → ③ <b>붙여넣은 내용 불러오기</b>.</p>
+      <div class="rangerow">
+        <label>기간 <input type="date" id="rangeFrom"></label>
+        <span>~</span>
+        <label><input type="date" id="rangeTo"></label>
+        <button class="btn" id="btnRange">기간 적용</button>
+      </div>
+      <p>기간을 바꾸면 날짜가 다시 만들어집니다. 이미 적어둔 날짜의 내용은 그대로 남습니다. 중간에 빼고 싶은 날은 그 날짜 오른쪽의 <b>날짜 빼기</b>를 누르세요.</p>
+      <div class="btnrow">
+        <button class="btn primary" id="btnExport">백업 내용 만들기</button>
+        <button class="btn" id="btnCopy">복사</button>
+        <button class="btn" id="btnImport">붙여넣은 내용 불러오기</button>
+        <button class="btn" id="btnReset">모두 지우기</button>
+      </div>
+      <textarea class="io" id="io" spellcheck="false" placeholder="백업 내용이 여기에 나옵니다. 다른 기기에서 복원할 때는 백업 글자를 붙여넣고 '불러오기'를 누르세요."></textarea>
+      <p class="status" id="statusLine">저장 대기 중</p>
+    </div>
+  </details>
+</div>
+
+<script>/* QRTiny — byte-mode QR encoder (versions 1-10, EC level M). No dependencies. */
+(function(root){
+  "use strict";
+
+  /* ---- Galois field GF(256), primitive polynomial 0x11D ---- */
+  var EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (function(){
+    var x = 1;
+    for (var i = 0; i < 255; i++){
+      EXP[i] = x;
+      LOG[x] = i;
+      x <<= 1;
+      if (x & 0x100) x ^= 0x11D;
+    }
+    for (var j = 255; j < 512; j++) EXP[j] = EXP[j - 255];
+  })();
+  function gmul(a, b){
+    if (a === 0 || b === 0) return 0;
+    return EXP[LOG[a] + LOG[b]];
+  }
+
+  /* generator polynomial of degree n, coefficients as field values, highest power first */
+  function genPoly(n){
+    var g = [1];
+    for (var i = 0; i < n; i++){
+      var ng = new Array(g.length + 1).fill(0);
+      for (var j = 0; j < g.length; j++){
+        ng[j] ^= g[j];                       // * x
+        ng[j + 1] ^= gmul(g[j], EXP[i]);     // * alpha^i
+      }
+      g = ng;
+    }
+    return g;
+  }
+
+  function rsEncode(data, ecLen){
+    var g = genPoly(ecLen);
+    var res = new Array(data.length + ecLen).fill(0);
+    for (var i = 0; i < data.length; i++) res[i] = data[i];
+    for (var i2 = 0; i2 < data.length; i2++){
+      var coef = res[i2];
+      if (coef === 0) continue;
+      for (var j = 0; j < g.length; j++) res[i2 + j] ^= gmul(g[j], coef);
+    }
+    return res.slice(data.length);
+  }
+
+  /* ---- version tables, EC level M ---- */
+  /* [ totalCodewords, ecPerBlock, [ [blockCount, dataPerBlock], ... ] ] */
+  var VER = {
+    1:  [26,  10, [[1, 16]]],
+    2:  [44,  16, [[1, 28]]],
+    3:  [70,  26, [[1, 44]]],
+    4:  [100, 18, [[2, 32]]],
+    5:  [134, 24, [[2, 43]]],
+    6:  [172, 16, [[4, 27]]],
+    7:  [196, 18, [[4, 31]]],
+    8:  [242, 22, [[2, 38], [2, 39]]],
+    9:  [292, 22, [[3, 36], [2, 37]]],
+    10: [346, 26, [[4, 43], [1, 44]]]
+  };
+  var ALIGN = {
+    1: [], 2: [6,18], 3: [6,22], 4: [6,26], 5: [6,30],
+    6: [6,34], 7: [6,22,38], 8: [6,24,42], 9: [6,26,46], 10: [6,28,50]
+  };
+  function dataCodewords(v){
+    var t = 0;
+    VER[v][2].forEach(function(b){ t += b[0] * b[1]; });
+    return t;
+  }
+
+  /* ---- bit buffer ---- */
+  function Bits(){ this.b = []; }
+  Bits.prototype.put = function(val, len){
+    for (var i = len - 1; i >= 0; i--) this.b.push((val >>> i) & 1);
+  };
+
+  function utf8(str){
+    var out = [], i, c;
+    for (i = 0; i < str.length; i++){
+      c = str.charCodeAt(i);
+      if (c < 0x80) out.push(c);
+      else if (c < 0x800){ out.push(0xC0 | (c >> 6), 0x80 | (c & 63)); }
+      else if (c >= 0xD800 && c <= 0xDBFF && i + 1 < str.length){
+        var c2 = str.charCodeAt(++i);
+        var cp = 0x10000 + ((c - 0xD800) << 10) + (c2 - 0xDC00);
+        out.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+      } else { out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)); }
+    }
+    return out;
+  }
+
+  /* ---- codeword stream ---- */
+  function makeCodewords(bytes, version){
+    var cci = version < 10 ? 8 : 16;
+    var bits = new Bits();
+    bits.put(4, 4);                 // byte mode
+    bits.put(bytes.length, cci);
+    for (var i = 0; i < bytes.length; i++) bits.put(bytes[i], 8);
+
+    var cap = dataCodewords(version) * 8;
+    var term = Math.min(4, cap - bits.b.length);
+    for (var t = 0; t < term; t++) bits.b.push(0);
+    while (bits.b.length % 8 !== 0) bits.b.push(0);
+
+    var dc = [];
+    for (var k = 0; k < bits.b.length; k += 8){
+      var v = 0;
+      for (var m = 0; m < 8; m++) v = (v << 1) | bits.b[k + m];
+      dc.push(v);
+    }
+    var pads = [0xEC, 0x11], p = 0;
+    while (dc.length < dataCodewords(version)) dc.push(pads[p++ % 2]);
+
+    /* split into blocks, compute ECC, interleave */
+    var ecLen = VER[version][1];
+    var dataBlocks = [], ecBlocks = [], pos = 0;
+    VER[version][2].forEach(function(spec){
+      for (var n = 0; n < spec[0]; n++){
+        var blk = dc.slice(pos, pos + spec[1]);
+        pos += spec[1];
+        dataBlocks.push(blk);
+        ecBlocks.push(rsEncode(blk, ecLen));
+      }
+    });
+    var out = [], maxData = 0;
+    dataBlocks.forEach(function(b){ if (b.length > maxData) maxData = b.length; });
+    for (var c = 0; c < maxData; c++)
+      for (var b2 = 0; b2 < dataBlocks.length; b2++)
+        if (c < dataBlocks[b2].length) out.push(dataBlocks[b2][c]);
+    for (var e = 0; e < ecLen; e++)
+      for (var b3 = 0; b3 < ecBlocks.length; b3++) out.push(ecBlocks[b3][e]);
+    return out;
+  }
+
+  /* ---- matrix ---- */
+  function newMatrix(size){
+    var m = [], r;
+    for (r = 0; r < size; r++) m.push(new Int8Array(size).fill(-1)); // -1 = free
+    return m;
+  }
+  function placeFinder(m, r, c){
+    for (var i = -1; i <= 7; i++){
+      for (var j = -1; j <= 7; j++){
+        var rr = r + i, cc = c + j;
+        if (rr < 0 || cc < 0 || rr >= m.length || cc >= m.length) continue;
+        var dark = (i >= 0 && i <= 6 && (j === 0 || j === 6)) ||
+                   (j >= 0 && j <= 6 && (i === 0 || i === 6)) ||
+                   (i >= 2 && i <= 4 && j >= 2 && j <= 4);
+        m[rr][cc] = dark ? 1 : 0;
+      }
+    }
+  }
+  function placeAlign(m, version){
+    var pos = ALIGN[version];
+    for (var a = 0; a < pos.length; a++){
+      for (var b = 0; b < pos.length; b++){
+        var r = pos[a], c = pos[b];
+        if (m[r][c] !== -1) continue;             // skips the three finder corners
+        for (var i = -2; i <= 2; i++)
+          for (var j = -2; j <= 2; j++)
+            m[r + i][c + j] = (Math.max(Math.abs(i), Math.abs(j)) !== 1) ? 1 : 0;
+      }
+    }
+  }
+  function reserveFormat(m){
+    var size = m.length, i;
+    for (i = 0; i <= 8; i++){
+      if (i !== 6) { if (m[8][i] === -1) m[8][i] = 0; if (m[i][8] === -1) m[i][8] = 0; }
+    }
+    for (i = 0; i < 8; i++){
+      if (m[8][size - 1 - i] === -1) m[8][size - 1 - i] = 0;
+      if (m[size - 1 - i][8] === -1) m[size - 1 - i][8] = 0;
+    }
+    m[size - 8][8] = 1; // dark module
+  }
+  function isFunction(version, size, r, c){
+    if (r <= 8 && c <= 8) return true;                       // top-left finder + format
+    if (r <= 8 && c >= size - 8) return true;                // top-right
+    if (r >= size - 8 && c <= 8) return true;                // bottom-left
+    if (r === 6 || c === 6) return true;                     // timing
+    if (version >= 7 && ((r < 6 && c >= size - 11) || (c < 6 && r >= size - 11))) return true;
+    var pos = ALIGN[version];
+    for (var a = 0; a < pos.length; a++)
+      for (var b = 0; b < pos.length; b++){
+        var pr = pos[a], pc = pos[b];
+        if (pr <= 8 && pc <= 8) continue;
+        if (pr <= 8 && pc >= size - 9) continue;
+        if (pr >= size - 9 && pc <= 8) continue;
+        if (Math.abs(r - pr) <= 2 && Math.abs(c - pc) <= 2) return true;
+      }
+    return false;
+  }
+
+  function bch(data, gen, genBits){
+    var d = data << (genBits - 1);
+    while (bitLen(d) >= genBits) d ^= gen << (bitLen(d) - genBits);
+    return d;
+  }
+  function bitLen(x){ var n = 0; while (x !== 0){ n++; x >>>= 1; } return n; }
+
+  function formatBits(mask){
+    var ecBits = 0;                      // level M
+    var data = (ecBits << 3) | mask;
+    var v = ((data << 10) | bch(data, 0x537, 11)) ^ 0x5412;
+    return v;
+  }
+  function versionBits(version){
+    return (version << 12) | bch(version, 0x1F25, 13);
+  }
+
+  function maskFn(n, r, c){
+    switch(n){
+      case 0: return (r + c) % 2 === 0;
+      case 1: return r % 2 === 0;
+      case 2: return c % 3 === 0;
+      case 3: return (r + c) % 3 === 0;
+      case 4: return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0;
+      case 5: return ((r * c) % 2) + ((r * c) % 3) === 0;
+      case 6: return (((r * c) % 2) + ((r * c) % 3)) % 2 === 0;
+      default: return (((r + c) % 2) + ((r * c) % 3)) % 2 === 0;
+    }
+  }
+
+  function penalty(m){
+    var size = m.length, score = 0, r, c, run, i;
+    /* rule 1: runs of 5+ */
+    for (r = 0; r < size; r++){
+      run = 1;
+      for (c = 1; c < size; c++){
+        if (m[r][c] === m[r][c - 1]) { run++; }
+        else { if (run >= 5) score += 3 + (run - 5); run = 1; }
+      }
+      if (run >= 5) score += 3 + (run - 5);
+    }
+    for (c = 0; c < size; c++){
+      run = 1;
+      for (r = 1; r < size; r++){
+        if (m[r][c] === m[r - 1][c]) { run++; }
+        else { if (run >= 5) score += 3 + (run - 5); run = 1; }
+      }
+      if (run >= 5) score += 3 + (run - 5);
+    }
+    /* rule 2: 2x2 blocks */
+    for (r = 0; r < size - 1; r++)
+      for (c = 0; c < size - 1; c++){
+        var v = m[r][c];
+        if (v === m[r][c + 1] && v === m[r + 1][c] && v === m[r + 1][c + 1]) score += 3;
+      }
+    /* rule 3: finder-like patterns */
+    var pat1 = [1,0,1,1,1,0,1,0,0,0,0], pat2 = [0,0,0,0,1,0,1,1,1,0,1];
+    function match(arr, pat){
+      for (var k = 0; k < 11; k++) if (arr[k] !== pat[k]) return false;
+      return true;
+    }
+    for (r = 0; r < size; r++)
+      for (c = 0; c <= size - 11; c++){
+        var row = [];
+        for (i = 0; i < 11; i++) row.push(m[r][c + i]);
+        if (match(row, pat1) || match(row, pat2)) score += 40;
+      }
+    for (c = 0; c < size; c++)
+      for (r = 0; r <= size - 11; r++){
+        var col = [];
+        for (i = 0; i < 11; i++) col.push(m[r + i][c]);
+        if (match(col, pat1) || match(col, pat2)) score += 40;
+      }
+    /* rule 4: dark ratio */
+    var dark = 0;
+    for (r = 0; r < size; r++) for (c = 0; c < size; c++) if (m[r][c] === 1) dark++;
+    var pct = dark * 100 / (size * size);
+    score += Math.floor(Math.abs(pct - 50) / 5) * 10;
+    return score;
+  }
+
+  function buildBase(version){
+    var size = 17 + 4 * version;
+    var m = newMatrix(size);
+    placeFinder(m, 0, 0);
+    placeFinder(m, 0, size - 7);
+    placeFinder(m, size - 7, 0);
+    for (var i = 8; i < size - 8; i++){
+      m[6][i] = (i % 2 === 0) ? 1 : 0;
+      m[i][6] = (i % 2 === 0) ? 1 : 0;
+    }
+    placeAlign(m, version);
+    if (version >= 7){
+      var vb = versionBits(version);
+      for (var k = 0; k < 18; k++){
+        var bit = (vb >> k) & 1;
+        m[Math.floor(k / 3)][size - 11 + (k % 3)] = bit;
+        m[size - 11 + (k % 3)][Math.floor(k / 3)] = bit;
+      }
+    }
+    reserveFormat(m);
+    return m;
+  }
+
+  /* data placement order: list of [r,c] in standard zigzag */
+  function dataPositions(version, size){
+    var out = [], up = true;
+    for (var col = size - 1; col > 0; col -= 2){
+      if (col === 6) col = 5;
+      for (var n = 0; n < size; n++){
+        var row = up ? (size - 1 - n) : n;
+        for (var k = 0; k < 2; k++){
+          var c = col - k;
+          if (!isFunction(version, size, row, c)) out.push([row, c]);
+        }
+      }
+      up = !up;
+    }
+    return out;
+  }
+
+  function placeFormat(m, mask){
+    var size = m.length, bitsv = formatBits(mask), i;
+    for (i = 0; i <= 5; i++) m[8][i] = (bitsv >> (14 - i)) & 1;
+    m[8][7] = (bitsv >> 8) & 1;
+    m[8][8] = (bitsv >> 7) & 1;
+    m[7][8] = (bitsv >> 6) & 1;
+    for (i = 0; i <= 5; i++) m[5 - i][8] = (bitsv >> (14 - i)) & 1;
+    for (i = 0; i < 8; i++) m[size - 1 - i][8] = (bitsv >> i) & 1;
+    for (i = 0; i < 7; i++) m[8][size - 7 + i] = (bitsv >> (6 - i)) & 1;
+    m[size - 8][8] = 1;
+  }
+
+  function make(text){
+    var bytes = utf8(String(text == null ? "" : text));
+    var version = 0;
+    for (var v = 1; v <= 10; v++){
+      var cci = v < 10 ? 8 : 16;
+      if (4 + cci + bytes.length * 8 <= dataCodewords(v) * 8){ version = v; break; }
+    }
+    if (!version) throw new Error("내용이 너무 깁니다 (QR 최대 용량 초과)");
+
+    var cw = makeCodewords(bytes, version);
+    var size = 17 + 4 * version;
+    var base = buildBase(version);
+    var pos = dataPositions(version, size);
+
+    var bitsArr = [];
+    for (var i = 0; i < cw.length; i++)
+      for (var b = 7; b >= 0; b--) bitsArr.push((cw[i] >> b) & 1);
+
+    var best = null;
+    for (var mask = 0; mask < 8; mask++){
+      var m = base.map(function(row){ return Int8Array.from(row); });
+      for (var p = 0; p < pos.length; p++){
+        var r = pos[p][0], c = pos[p][1];
+        var bit = p < bitsArr.length ? bitsArr[p] : 0;
+        m[r][c] = maskFn(mask, r, c) ? (bit ^ 1) : bit;
+      }
+      placeFormat(m, mask);
+      var sc = penalty(m);
+      if (!best || sc < best.score) best = { score: sc, m: m, mask: mask };
+    }
+    return {
+      size: size,
+      version: version,
+      mask: best.mask,
+      modules: best.m,
+      isDark: function(r, c){ return best.m[r][c] === 1; }
+    };
+  }
+
+  /* draw into a canvas element, module-aligned so it stays crisp */
+  function draw(canvas, text, opts){
+    opts = opts || {};
+    var qr = make(text);
+    var quiet = opts.quiet == null ? 4 : opts.quiet;
+    var target = opts.size || 120;
+    var dpr = (root.devicePixelRatio || 1);
+    var scale = Math.max(1, Math.floor((target * dpr) / (qr.size + quiet * 2)));
+    var px = (qr.size + quiet * 2) * scale;
+    canvas.width = px; canvas.height = px;
+    canvas.style.width = target + "px";
+    canvas.style.height = target + "px";
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = opts.light || "#ffffff";
+    ctx.fillRect(0, 0, px, px);
+    ctx.fillStyle = opts.dark || "#000000";
+    for (var r = 0; r < qr.size; r++)
+      for (var c = 0; c < qr.size; c++)
+        if (qr.isDark(r, c))
+          ctx.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
+    return qr;
+  }
+
+  root.QRTiny = { make: make, draw: draw, _internals: {
+    rsEncode: rsEncode, makeCodewords: makeCodewords, dataPositions: dataPositions,
+    maskFn: maskFn, formatBits: formatBits, VER: VER, dataCodewords: dataCodewords, utf8: utf8
+  }};
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+<script>
+(function(){
+  "use strict";
+  var KEY="milano-trip-doc-v1", START="2026-09-29", END="2026-10-13";
+  var DOW=["일","월","화","수","목","금","토"];
+
+  /* ---------- icons ---------- */
+  function svg(inner, vb){ return '<svg viewBox="'+(vb||"0 0 24 24")+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+inner+'</svg>'; }
+  var WX={
+    sun:  svg('<circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/>'),
+    part: svg('<circle cx="8.5" cy="8.5" r="3"/><path d="M8.5 2.6v1.6M2.6 8.5h1.6M4.3 4.3l1.2 1.2"/><path d="M17.5 19H8.8A3.8 3.8 0 0 1 9 11.4a5 5 0 0 1 9.3 1.2 3.2 3.2 0 0 1-.8 6.4z"/>'),
+    cloud:svg('<path d="M17.5 18H7.8A3.8 3.8 0 0 1 8 10.4a5 5 0 0 1 9.3 1.2 3.2 3.2 0 0 1-.8 6.4z"/>'),
+    rain: svg('<path d="M17.5 15H7.8A3.8 3.8 0 0 1 8 7.4a5 5 0 0 1 9.3 1.2 3.2 3.2 0 0 1-.8 6.4z"/><path d="M8.5 18l-1 3M12.5 18l-1 3M16.5 18l-1 3"/>'),
+    snow: svg('<path d="M17.5 15H7.8A3.8 3.8 0 0 1 8 7.4a5 5 0 0 1 9.3 1.2 3.2 3.2 0 0 1-.8 6.4z"/><path d="M9 19h.01M12 20.5h.01M15 19h.01"/>')
+  };
+  var WXNAME={sun:"맑음",part:"구름조금",cloud:"흐림",rain:"비",snow:"눈"};
+  var MOVEIC={
+    bus:  svg('<rect x="4" y="4" width="16" height="12" rx="2"/><path d="M4 10h16M7 20v-2M17 20v-2"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/>'),
+    train:svg('<rect x="5" y="3" width="14" height="13" rx="3"/><path d="M5 11h14M8 21l2-3M16 21l-2-3"/><circle cx="9" cy="14" r=".8"/><circle cx="15" cy="14" r=".8"/>'),
+    metro:svg('<circle cx="12" cy="12" r="9"/><path d="M8 15l1.5-7 2.5 4 2.5-4L16 15"/>'),
+    taxi: svg('<path d="M3 13l1.8-4.6A2 2 0 0 1 6.7 7h10.6a2 2 0 0 1 1.9 1.4L21 13v4h-2M3 17v-4M3 17h18"/><circle cx="7" cy="17" r="1.6"/><circle cx="17" cy="17" r="1.6"/><path d="M9 4h6"/>'),
+    walk: svg('<circle cx="13" cy="4.5" r="1.6"/><path d="M11 21l2-5-2.5-2.5.8-4L9 11l-2.5 1M13.5 9.5L16 12l2.5.8M12.8 16l3 5"/>')
+  };
+  var MOVENAME={bus:"버스",train:"기차",metro:"지하철",taxi:"택시·차량",walk:"도보"};
+  var PLANE='<svg viewBox="0 0 40 24" fill="currentColor" aria-hidden="true"><path d="M39 12 C36 10.2 30 9.6 24 9.5 L6 9.9 C3 10.2 2 11 2 12 C2 13 3 13.8 6 14.1 L24 14.5 C30 14.4 36 13.8 39 12 Z"/><path d="M25 10 L13.5 2.8 L10 2.8 L16 10 Z"/><path d="M25 14 L13.5 21.2 L10 21.2 L16 14 Z"/><path d="M9 10.2 L4.4 6.4 L2.8 6.4 L5.6 10.2 Z"/><path d="M9 13.8 L4.4 17.6 L2.8 17.6 L5.6 13.8 Z"/></svg>';
+  var PIN=svg('<path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>');
+  var TEL=svg('<path d="M5 4h3.5l1.6 4-2 1.4a12 12 0 0 0 5.5 5.5l1.4-2 4 1.6V19a1.5 1.5 0 0 1-1.7 1.5A15.5 15.5 0 0 1 3.5 5.7 1.5 1.5 0 0 1 5 4z"/>');
+
+  /* ---------- storage ---------- */
+  function load(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  var st=document.getElementById("statusLine"), tSave=null;
+  function setStatus(t){ if(st) st.textContent=t; }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); setStatus("저장됨 · "+new Date().toLocaleString("ko-KR")); }
+    catch(e){ setStatus("저장 공간이 부족합니다. 사진을 줄이거나 백업 내용을 복사해 두세요."); }
+  }
+  function queueSave(){ clearTimeout(tSave); tSave=setTimeout(save,350); }
+
+  /* ---------- dates ---------- */
+  function pad2(n){ return (n<10?"0":"")+n; }
+  function isoOf(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }  /* 현지 날짜 그대로 */
+  function days(a,b){
+    var o=[], d=new Date(a+"T12:00:00"), e=new Date(b+"T12:00:00");
+    while(d<=e){ o.push(isoOf(d)); d.setDate(d.getDate()+1); }
+    return o;
+  }
+  function shiftISO(iso,n){ var d=new Date(iso+"T12:00:00"); d.setDate(d.getDate()+n); return isoOf(d); }
+  function dateList(){ return (state && state.dates && state.dates.length) ? state.dates : days(START,END); }
+  function dnum(iso,off){ var d=new Date(iso+"T00:00:00"); d.setDate(d.getDate()+(off||0)); return d.getDate()+"("+DOW[d.getDay()]+")"; }
+  function todayISO(){ return isoOf(new Date()); }
+
+  /* ---------- default ---------- */
+  function blankDay(){ return {wx:[], note:"", blocks:[]}; }
+  var CONFIRMED = {
+    "2026-09-29": {from:"인천(ICN)", depT:"2", dep:"09:55",
+                   to:"마드리드 바라하스(MAD)", arrT:"1", arr:"18:00", plus:false,
+                   no:"OZ9805 (운항 KE0913)", air:"아시아나항공 · 대한항공 공동운항",
+                   dur:"※ 15시간 5분 · 일반석(Q) · B789 · 무료 수하물 1개"},
+    "2026-10-13": {from:"밀라노 말펜사(MXP)", depT:"1", dep:"22:00",
+                   to:"인천(ICN)", arrT:"2", arr:"16:35", plus:true,
+                   no:"OZ582", air:"아시아나항공",
+                   dur:"※ 11시간 35분 · 일반석(K) · A359 · 무료 수하물 1개"}
+  };
+  function seed(){
+    var list=days(START,END), d={};
+    list.forEach(function(k){ d[k]=blankDay(); });
+    d[START].wx=[{city:"밀라노",lo:"",hi:"",ic:"part"}];
+    d[START].blocks=[
+      Object.assign({type:"flight", stops:""}, CONFIRMED[START]),
+      {type:"move", kind:"metro", txt:"마드리드 바라하스 T1 → 시내", stops:"", label:""},
+      {type:"place", en:"", ko:"", addr:"", tel:"", resv:"", url:"", cap:"찾아가는법", photos:["",""]}
+    ];
+    d["2026-10-13"].wx=[{city:"밀라노",lo:"",hi:"",ic:"part"}];
+    d["2026-10-13"].blocks=[
+      {type:"note", txt:"22:00 출발 — 체크아웃 후 말펜사 공항으로 이동, 3시간 전 도착 기준으로 역산"},
+      Object.assign({type:"flight"}, CONFIRMED["2026-10-13"])
+    ];
+    return {title:"유럽 출장 스케줄", dates:list, days:d, seedVersion:2, dateFix:1};
+  }
+  var state=load();
+  if(!state||!state.days) state=seed();
+  function normalize(){
+    if(!state.dates||!state.dates.length) state.dates=days(START,END);   // older saves: use the trip range
+    state.dates=state.dates.slice().sort();
+    state.dates.forEach(function(k){ if(!state.days[k]) state.days[k]=blankDay(); });
+  }
+  normalize();
+
+  /* 확정 항공편을 기존 저장분에 한 번만 채워 넣습니다 — 직접 적어둔 값은 건드리지 않습니다 */
+  function applyConfirmed(){
+    if(state.seedVersion>=2) return;
+    Object.keys(CONFIRMED).forEach(function(iso){
+      if(!state.days[iso]) state.days[iso]=blankDay();
+      var blocks=state.days[iso].blocks, f=null, i;
+      for(i=0;i<blocks.length;i++) if(blocks[i].type==="flight"){ f=blocks[i]; break; }
+      if(!f){
+        f={type:"flight",from:"",to:"",dep:"",arr:"",depT:"",arrT:"",no:"",air:"",dur:"",plus:false};
+        blocks.unshift(f);
+      }
+      var c=CONFIRMED[iso], fresh=!f.no && !f.dep && !f.arr;
+      Object.keys(c).forEach(function(k){
+        if(k==="plus"){ if(fresh) f.plus=c.plus; return; }
+        if(!f[k]) f[k]=c[k];
+      });
+      /* 목적지가 마드리드로 바뀌기 전의 기본 이동 블록만 교체 */
+      blocks.forEach(function(b){
+        if(b.type==="move" && b.txt==="말펜사 공항 → 밀라노 시내 (말펜사 익스프레스)"){
+          b.txt="마드리드 바라하스 T1 → 시내"; b.kind="metro";
+        }
+      });
+    });
+    if(state.title==="밀라노 출장 스케줄" || state.title==="밀라노 출장 스케쥴") state.title="유럽 출장 스케줄";
+    state.seedVersion=2; save();
+  }
+  /* 날짜가 하루 밀려 저장된 기존 데이터를 제자리로 되돌립니다 */
+  function fixShiftedDates(){
+    if(state.dateFix===1){ return; }
+    var shifted = state.dates.indexOf("2026-09-28")>=0 && state.dates.indexOf("2026-10-13")<0;
+    if(shifted){
+      function mine(b){   /* 앱이 기본으로 넣어둔 블록인지 — 사용자가 적은 내용은 남깁니다 */
+        if(b.type==="flight") return b.no==="OZ9805 (운항 KE0913)" || b.no==="OZ582" || (!b.no && !b.from && !b.dep && !b.arr);
+        if(b.type==="move")   return b.txt==="마드리드 바라하스 T1 → 시내" || b.txt==="말펜사 공항 → 밀라노 시내 (말펜사 익스프레스)";
+        if(b.type==="place")  return !b.en && !b.ko && !b.addr && !b.tel && !b.resv && !b.url && !b.photo && !(b.photos&&b.photos.join(""));
+        if(b.type==="note")   return !b.txt || b.txt.indexOf("22:00 출발")===0 || b.txt.indexOf("체크아웃 후 공항 이동")===0;
+        return false;
+      }
+      var moved={};
+      state.dates.forEach(function(k){
+        var D=state.days[k]||blankDay();
+        D.blocks=(D.blocks||[]).filter(function(b){ return !mine(b); });
+        moved[shiftISO(k,1)]=D;
+      });
+      state.days=moved;
+      state.dates=days(START,END);
+      state.dates.forEach(function(k){ if(!state.days[k]) state.days[k]=blankDay(); });
+      state.seedVersion=0;   /* 확정 항공편을 올바른 날짜에 다시 넣습니다 */
+    }
+    state.dateFix=1;
+  }
+  fixShiftedDates();
+  applyConfirmed();
+
+  /* ---------- dom helpers ---------- */
+  function E(tag,cls,txt){ var n=document.createElement(tag); if(cls)n.className=cls; if(txt!=null)n.textContent=txt; return n; }
+  function grow(ta){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; }
+  function inp(cls,val,ph,on,attrs){
+    var i=document.createElement("input"); i.className=cls||""; i.value=val||""; i.placeholder=ph||"";
+    if(attrs) Object.keys(attrs).forEach(function(k){ i.setAttribute(k,attrs[k]); });
+    i.addEventListener("input",function(){ on(i.value); queueSave(); });
+    return i;
+  }
+  function area(cls,val,ph,on){
+    var t=document.createElement("textarea"); t.className=cls||""; t.value=val||""; t.placeholder=ph||""; t.rows=1;
+    t.addEventListener("input",function(){ grow(t); on(t.value); queueSave(); });
+    requestAnimationFrame(function(){ grow(t); });
+    return t;
+  }
+  function iconSpan(html,cls){ var s=E("span",cls); s.innerHTML=html; return s; }
+
+  /* ---------- blocks ---------- */
+  function tools(day,idx){
+    var t=E("div","blktools");
+    var up=E("button",null,"▲"); up.type="button"; up.title="위로";
+    var dn=E("button",null,"▼"); dn.type="button"; dn.title="아래로";
+    var rm=E("button","rm","✕"); rm.type="button"; rm.title="삭제";
+    var arr=state.days[day].blocks;
+    up.addEventListener("click",function(){ if(idx>0){ arr.splice(idx-1,0,arr.splice(idx,1)[0]); save(); render(); } });
+    dn.addEventListener("click",function(){ if(idx<arr.length-1){ arr.splice(idx+1,0,arr.splice(idx,1)[0]); save(); render(); } });
+    rm.addEventListener("click",function(){ arr.splice(idx,1); save(); render(); });
+    t.appendChild(up); t.appendChild(dn); t.appendChild(rm);
+    return t;
+  }
+
+  function flightBlock(b,day){
+    var w=E("div","blk");
+    var f=E("div","flight");
+    function port(which){
+      var p=E("div","port");
+      p.appendChild(area("ap", which==="from"?b.from:b.to, which==="from"?"출발 공항(코드)":"도착 공항(코드)",
+        function(v){ if(which==="from") b.from=v; else b.to=v; }));
+      var row=E("div","tmrow");
+      var pfx=E("span","dpfx", dnum(day, which==="to"&&b.plus?1:0));
+      row.appendChild(pfx);
+      row.appendChild(inp("tm", which==="from"?b.dep:b.arr, "00:00",
+        function(v){ if(which==="from") b.dep=v; else b.arr=v; }, {inputmode:"numeric"}));
+      row.appendChild(E("span","tag", which==="from"?"출발":"도착"));
+      p.appendChild(row);
+      var term=E("div","term");
+      term.appendChild(E("span",null,"TERMINAL NO :"));
+      term.appendChild(inp("", which==="from"?b.depT:b.arrT, "—",
+        function(v){ if(which==="from") b.depT=v; else b.arrT=v; }));
+      p.appendChild(term);
+      if(which==="to"){
+        var nd=E("label","nextday");
+        var cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!b.plus;
+        cb.addEventListener("change",function(){ b.plus=cb.checked; pfx.textContent=dnum(day,cb.checked?1:0); queueSave(); });
+        nd.appendChild(cb); nd.appendChild(E("span",null,"다음날 도착"));
+        p.appendChild(nd);
+      }
+      return p;
+    }
+    f.appendChild(port("from"));
+    f.appendChild(iconSpan(PLANE,"plane"));
+    f.appendChild(port("to"));
+    var meta=E("div","meta");
+    meta.appendChild(inp("no", b.no, "편명 (예: KE927)", function(v){ b.no=v; }));
+    meta.appendChild(area("", b.air, "항공사", function(v){ b.air=v; }));
+    meta.appendChild(area("dur", b.dur, "※ 비행시간 · 좌석 · 기종", function(v){ b.dur=v; }));
+    f.appendChild(meta);
+    w.appendChild(f);
+    return w;
+  }
+
+  function moveBlock(b,day){
+    var w=E("div","blk");
+    var m=E("div","move");
+    var ico=iconSpan(MOVEIC[b.kind]||MOVEIC.bus,"ic");
+    m.appendChild(ico);
+    var sel=document.createElement("select"); sel.className="kind";
+    Object.keys(MOVENAME).forEach(function(k){
+      var o=document.createElement("option"); o.value=k; o.textContent=MOVENAME[k];
+      if(b.kind===k) o.selected=true; sel.appendChild(o);
+    });
+    m.appendChild(sel);
+    m.appendChild(inp("txt", b.txt, "이동 내용 (예: 니스 공항 앞 버스 12번으로 이동)", function(v){ b.txt=v; }));
+    var chain=E("div","chain");
+    var lab=E("div","lab");
+    lab.appendChild(inp("", b.label, "플랫폼/노선", function(v){ b.label=v; }));
+    lab.appendChild(E("span",null,"경유 정류장 — 쉼표 또는 줄바꿈으로 구분"));
+    chain.appendChild(lab);
+    var ta=area("", b.stops, "Aéroport/Promenade(승차역), La Vallière, Ferber, …", function(v){ b.stops=v; });
+    ta.addEventListener("blur",function(){
+      var parts=ta.value.split(/\s*(?:»|,|\n)\s*/).filter(function(x){ return x.trim()!==""; });
+      ta.value=parts.join(" » "); b.stops=ta.value; grow(ta); queueSave();
+    });
+    chain.appendChild(ta);
+    var hasChain = !!(b.stops||b.label);
+    chain.hidden = !hasChain;
+    var toggle=E("button",null, hasChain ? "경유 정류장 숨기기" : "＋ 경유 정류장");
+    toggle.type="button"; toggle.className="kind";
+    toggle.addEventListener("click",function(){
+      chain.hidden=!chain.hidden;
+      toggle.textContent = chain.hidden ? "＋ 경유 정류장" : "경유 정류장 숨기기";
+      if(!chain.hidden){ grow(ta); ta.focus(); }
+    });
+    m.appendChild(toggle);
+    sel.addEventListener("change",function(){
+      b.kind=sel.value; ico.innerHTML=MOVEIC[b.kind]; save();
+    });
+    w.appendChild(m); w.appendChild(chain);
+    return w;
+  }
+
+  function shrinkPhoto(file, cb){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var S=460, c=document.createElement("canvas"); c.width=S; c.height=S;
+        var ctx=c.getContext("2d");
+        var side=Math.min(img.width,img.height);                        /* 가운데를 정사각형으로 잘라냅니다 */
+        ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,S,S);
+        cb(c.toDataURL("image/jpeg",0.76));
+      };
+      img.onerror=function(){ cb(null); };
+      img.src=fr.result;
+    };
+    fr.onerror=function(){ cb(null); };
+    fr.readAsDataURL(file);
+  }
+
+  function drawQR(canvas, url){
+    try{
+      if(!url){ return false; }
+      QRTiny.draw(canvas, url, {size:96, dark:"#111111", light:"#ffffff"});
+      return true;
+    }catch(e){ return false; }
+  }
+
+  function placeBlock(b,day){
+    var w=E("div","blk");
+    var p=E("div","place");
+
+    if(!b.photos){ b.photos = b.photo ? [b.photo,""] : ["",""]; b.photo=""; }   /* 기존 사진 1장은 그대로 첫 칸에 */
+    while(b.photos.length<2) b.photos.push("");
+    var pw=E("div","photos");
+    b.photos.slice(0,2).forEach(function(src,i){
+      var shot=E("div","shot"+(src?" has":""));
+      if(src){ var im=new Image(); im.src=src; im.alt=""; shot.appendChild(im); }
+      else shot.appendChild(E("div","ph", i===0 ? "사진 추가" : "사진 추가"));
+      var file=document.createElement("input"); file.type="file"; file.accept="image/*";
+      file.addEventListener("change",function(){
+        var f=file.files && file.files[0]; if(!f) return;
+        shrinkPhoto(f,function(d){ if(d){ b.photos[i]=d; save(); render(); } });
+      });
+      shot.appendChild(file);
+      var clr=E("button","clr","×"); clr.type="button"; clr.title="사진 삭제";
+      clr.addEventListener("click",function(e){ e.preventDefault(); b.photos[i]=""; save(); render(); });
+      shot.appendChild(clr);
+      pw.appendChild(shot);
+    });
+    p.appendChild(pw);
+
+    var info=E("div","pinfo");
+    info.appendChild(inp("en", b.en, "영문 이름 (예: Hotel Federale)", function(v){ b.en=v; }));
+    info.appendChild(inp("ko", b.ko, "한글 이름 (예: 호텔 페데랄레)", function(v){ b.ko=v; }));
+    var r1=E("div","row"); r1.innerHTML=PIN;
+    r1.appendChild(area("", b.addr, "주소 — 현지어 그대로 적어두면 택시에서 보여주기 좋습니다", function(v){ b.addr=v; }));
+    info.appendChild(r1);
+    var r2=E("div","row"); r2.innerHTML=TEL;
+    r2.appendChild(inp("", b.tel, "전화번호", function(v){ b.tel=v; }));
+    info.appendChild(r2);
+    info.appendChild(inp("resv", b.resv, "예약번호 / 박수 / 조식 시간", function(v){ b.resv=v; }));
+    p.appendChild(info);
+
+    var q=E("div","qrbox");
+    var cv=document.createElement("canvas");
+    var empty=E("div","empty","링크 입력 시 QR 생성");
+    q.appendChild(cv); q.appendChild(empty);
+    var capwrap=E("div","capwrap");
+    capwrap.appendChild(inp("cap", b.cap, "찾아가는법", function(v){ b.cap=v; }));
+    var urlIn=inp("url", b.url, "지도 · 블로그 링크 붙여넣기", function(v){ b.url=v; refreshQR(); });
+    capwrap.appendChild(urlIn);
+    q.appendChild(capwrap);
+    function refreshQR(){
+      clearTimeout(urlIn._t);
+      urlIn._t=setTimeout(function(){
+        var okQR = b.url && b.url.trim() ? drawQR(cv, b.url.trim()) : false;
+        cv.style.display = okQR ? "block" : "none";
+        empty.style.display = okQR ? "none" : "flex";
+        empty.textContent = (b.url && b.url.trim() && !okQR) ? "링크가 너무 깁니다" : "링크 입력 시 QR 생성";
+      },300);
+    }
+    refreshQR();
+    p.appendChild(q);
+
+    w.appendChild(p);
+    return w;
+  }
+
+  function noteBlock(b){
+    var w=E("div","blk");
+    var n=E("div","note");
+    n.appendChild(E("span","mk","※"));
+    n.appendChild(area("", b.txt, "메모 (예: 샤를드골 공항 철도로 터미널2에서 터미널3으로 이동)", function(v){ b.txt=v; }));
+    w.appendChild(n);
+    return w;
+  }
+
+  /* ---------- weather ---------- */
+  function wxRow(day, w, i){
+    var box=E("div","wx");
+    box.appendChild(inp("deg lo t", w.lo, "0", function(v){ w.lo=v; }, {inputmode:"numeric","aria-label":"최저 기온"}));
+    box.appendChild(E("span","t","°"));
+    box.appendChild(E("span",null,"/"));
+    box.appendChild(inp("deg hi t", w.hi, "0", function(v){ w.hi=v; }, {inputmode:"numeric","aria-label":"최고 기온"}));
+    box.appendChild(E("span","t","°"));
+    box.appendChild(inp("city", w.city, "도시", function(v){ w.city=v; }));
+    var ib=E("div","icbox"); ib.innerHTML=WX[w.ic]||WX.sun;
+    var sel=document.createElement("select"); sel.className="ic"; sel.setAttribute("aria-label","날씨");
+    Object.keys(WXNAME).forEach(function(k){
+      var o=document.createElement("option"); o.value=k; o.textContent=WXNAME[k];
+      if(w.ic===k) o.selected=true; sel.appendChild(o);
+    });
+    sel.addEventListener("change",function(){ w.ic=sel.value; ib.innerHTML=WX[w.ic]; save(); });
+    ib.appendChild(sel);
+    box.appendChild(ib);
+    var x=E("button","x","×"); x.type="button"; x.title="날씨 삭제";
+    x.addEventListener("click",function(){ state.days[day].wx.splice(i,1); save(); render(); });
+    box.appendChild(x);
+    return box;
+  }
+
+  /* ---------- render ---------- */
+  function render(){
+    var host=document.getElementById("days");
+    host.innerHTML="";
+    var today=todayISO();
+    state.dates.forEach(function(iso){
+      var D=state.days[iso], d=new Date(iso+"T00:00:00");
+      var sec=E("section","day");
+      var head=E("div","dayhead");
+      head.appendChild(E("span","bigdate",(d.getMonth()+1)+"/"+d.getDate()));
+      head.appendChild(E("span","dow",DOW[d.getDay()]+"요일"));
+      if(iso===today) head.appendChild(E("span","today","오늘"));
+      var dx=E("button","dayx","날짜 빼기"); dx.type="button"; dx.title="이 날짜를 일정에서 제외";
+      dx.addEventListener("click",function(){
+        state.dates=state.dates.filter(function(k){ return k!==iso; });
+        save(); render();
+      });
+      head.appendChild(dx);
+      var wxw=E("div","wxwrap");
+      D.wx.forEach(function(w,i){ wxw.appendChild(wxRow(iso,w,i)); });
+      var aw=E("button","addwx", D.wx.length? "＋ 도시" : "＋ 날씨");
+      aw.type="button";
+      aw.addEventListener("click",function(){ D.wx.push({city:"",lo:"",hi:"",ic:"part"}); save(); render(); });
+      wxw.appendChild(aw);
+      head.appendChild(wxw);
+      sec.appendChild(head);
+
+      sec.appendChild(area("daynote", D.note, "＋ 이 날 메모", function(v){ D.note=v; }));
+
+      D.blocks.forEach(function(b,idx){
+        var node = b.type==="flight" ? flightBlock(b,iso)
+                 : b.type==="move"   ? moveBlock(b,iso)
+                 : b.type==="place"  ? placeBlock(b,iso)
+                 :                     noteBlock(b);
+        node.appendChild(tools(iso,idx));
+        sec.appendChild(node);
+      });
+
+      var add=E("div","addrow");
+      [["항공편","flight"],["이동 · 경로","move"],["숙소 · 장소","place"],["메모","note"]].forEach(function(spec){
+        var btn=E("button",null,"＋ "+spec[0]); btn.type="button";
+        btn.addEventListener("click",function(){
+          var t=spec[1], nb;
+          if(t==="flight") nb={type:"flight",from:"",to:"",dep:"",arr:"",depT:"",arrT:"",no:"",air:"",dur:"",plus:false};
+          else if(t==="move") nb={type:"move",kind:"bus",txt:"",stops:"",label:""};
+          else if(t==="place") nb={type:"place",en:"",ko:"",addr:"",tel:"",resv:"",url:"",cap:"찾아가는법",photos:["",""]};
+          else nb={type:"note",txt:""};
+          D.blocks.push(nb); save(); render();
+        });
+        add.appendChild(btn);
+      });
+      sec.appendChild(add);
+      host.appendChild(sec);
+    });
+  }
+
+  /* ---------- head widgets ---------- */
+  var titleIn=document.getElementById("docTitle");
+  titleIn.value=state.title||"유럽 출장 스케줄";
+  titleIn.addEventListener("input",function(){ state.title=titleIn.value; queueSave(); });
+  function paintRange(){
+    var l=state.dates;
+    document.getElementById("docRange").textContent = l.length
+      ? l[0].replace(/-/g,".")+" ~ "+l[l.length-1].replace(/-/g,".") : "날짜를 추가해 주세요";
+    var f=document.getElementById("rangeFrom"), t=document.getElementById("rangeTo");
+    if(l.length){ f.value=l[0]; t.value=l[l.length-1]; }
+  }
+
+
+  document.getElementById("btnPrint").addEventListener("click",function(){ window.print(); });
+
+  document.getElementById("btnRange").addEventListener("click",function(){
+    var f=document.getElementById("rangeFrom").value, t=document.getElementById("rangeTo").value;
+    if(!f||!t||f>t){ setStatus("시작일이 종료일보다 늦습니다. 날짜를 다시 확인해 주세요."); return; }
+    state.dates=days(f,t);
+    state.dates.forEach(function(k){ if(!state.days[k]) state.days[k]=blankDay(); });
+    save(); paintRange(); render();
+    setStatus("기간을 " + f + " ~ " + t + " 로 바꿨습니다. 적어둔 내용은 날짜별로 그대로 남아 있습니다.");
+  });
+  var io=document.getElementById("io");
+  function fillIO(){ io.value=JSON.stringify(state); }
+  document.getElementById("btnPanel").addEventListener("click",function(){
+    var p=document.getElementById("panel"); p.open=true; fillIO();
+    p.scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  document.getElementById("panel").addEventListener("toggle",function(){
+    if(document.getElementById("panel").open && !io.value) fillIO();
+  });
+  document.getElementById("btnExport").addEventListener("click",function(){ io.value=JSON.stringify(state); io.select(); });
+  document.getElementById("btnCopy").addEventListener("click",function(){
+    if(!io.value) io.value=JSON.stringify(state);
+    io.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    if(navigator.clipboard) navigator.clipboard.writeText(io.value).catch(function(){});
+    setStatus("백업 내용을 복사했습니다.");
+  });
+  document.getElementById("btnImport").addEventListener("click",function(){
+    var t=io.value.trim();
+    if(!t){ setStatus("불러올 내용이 비어 있습니다. 백업 글자를 먼저 붙여넣으세요."); return; }
+    try{
+      var next=JSON.parse(t);
+      if(!next||!next.days) throw new Error("bad");
+      state=next; normalize();
+      titleIn.value=state.title||"";
+      save(); paintRange(); render(); setStatus("불러왔습니다.");
+    }catch(e){ setStatus("형식이 맞지 않아 불러오지 못했습니다. 백업 글자 전체를 붙여넣었는지 확인해 주세요."); }
+  });
+  document.getElementById("btnReset").addEventListener("click",function(){
+    state=seed(); normalize(); titleIn.value=state.title; save(); paintRange(); render(); setStatus("처음 상태로 되돌렸습니다.");
+  });
+
+  paintRange(); render();
+  setStatus(load()? "이 기기에 저장된 내용을 불러왔습니다." : "아직 저장된 내용이 없습니다. 입력하면 자동 저장됩니다.");
+})();
+</script>
+
+</body>
+</html>
