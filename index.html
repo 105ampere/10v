@@ -724,14 +724,39 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     }
   }catch(e){ dbRef = null; }
 
+  /* Firebase는 객체의 키 순서를 그대로 보존하지 않으므로, 내가 방금 쓴 내용이 그대로
+     되돌아온 것인지 비교할 때는 키 순서를 무시하는 방식으로 비교해야 합니다.
+     (그냥 JSON.stringify로 비교하면 순서가 달라서 항상 "다른 내용"으로 오판해
+     화면이 매번 다시 그려지고, 입력 중 깜빡이는 원인이 됩니다.) */
+  function stableStringify(obj){
+    if(obj===null || typeof obj!=="object") return JSON.stringify(obj);
+    if(Array.isArray(obj)) return "["+obj.map(stableStringify).join(",")+"]";
+    var keys=Object.keys(obj).sort();
+    return "{"+keys.map(function(k){ return JSON.stringify(k)+":"+stableStringify(obj[k]); }).join(",")+"}";
+  }
+  /* Firebase는 빈 배열([])이 있던 날짜의 그 항목을 통째로 지우므로, 비교하기 전에
+     항상 같은 모양으로 맞춰줍니다 (그렇지 않으면 "내용은 같은데 모양이 달라서"
+     매번 다른 내용으로 오판해 화면이 다시 그려집니다). */
+  function fillDayDefaults(obj){
+    if(!obj || !obj.days) return obj;
+    var list = obj.dates || Object.keys(obj.days);
+    list.forEach(function(k){
+      if(!obj.days[k]) obj.days[k]={wx:[],note:"",blocks:[]};
+      var D=obj.days[k];
+      if(!Array.isArray(D.wx)) D.wx=[];
+      if(!Array.isArray(D.blocks)) D.blocks=[];
+      if(D.note==null) D.note="";
+    });
+    return obj;
+  }
+
   function load(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
   var st=document.getElementById("statusLine"), tSave=null;
   function setStatus(t){ if(st) st.textContent=t; }
 
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
-    var json = JSON.stringify(state);
-    lastSynced = json;
+    lastSynced = stableStringify(state);
     if(dbRef){
       setStatus("저장 중…");
       dbRef.set(state).then(function(){
@@ -750,7 +775,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     state = remote;
     normalize(); fixShiftedDates(); applyConfirmed();
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
-    lastSynced = JSON.stringify(state);
+    lastSynced = stableStringify(state);
     titleIn.value = state.title || "유럽 출장 스케줄";
     paintRange(); render();
   }
@@ -769,7 +794,8 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       dbRef.on("value", function(snap2){
         var inc = snap2.val();
         if(!inc || !inc.days) return;
-        var incJson = JSON.stringify(inc);
+        fillDayDefaults(inc);
+        var incJson = stableStringify(inc);
         if(incJson === lastSynced) return; /* 방금 이 화면에서 쓴 내용이 그대로 돌아온 경우 */
         applyRemote(inc);
         setStatus("다른 기기에서 바뀐 내용을 반영했습니다 · "+new Date().toLocaleString("ko-KR"));
