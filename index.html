@@ -825,7 +825,14 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   function normalize(){
     if(!state.dates||!state.dates.length) state.dates=days(START,END);   // older saves: use the trip range
     state.dates=state.dates.slice().sort();
-    state.dates.forEach(function(k){ if(!state.days[k]) state.days[k]=blankDay(); });
+    state.dates.forEach(function(k){
+      if(!state.days[k]) state.days[k]=blankDay();
+      var D=state.days[k];
+      /* Firebase는 빈 배열([])을 저장하지 않고 통째로 지워버리므로, 불러온 뒤 항상 복구해줍니다 */
+      if(!Array.isArray(D.wx)) D.wx=[];
+      if(!Array.isArray(D.blocks)) D.blocks=[];
+      if(D.note==null) D.note="";
+    });
   }
   normalize();
 
