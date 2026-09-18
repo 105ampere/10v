@@ -22,6 +22,7 @@ img{max-width:100%}[hidden]{display:none!important}
   --blue:#173C86; --red:#B81C1C;
   --chain:#173C86; --chain-field:rgba(0,0,0,.28);
   --flight-bg:#E9F1FB; --flight-line:#C9DCF2;
+  --oat-bg:#F3ECDD; --oat-line:#E3D6BE;
   --shadow:0 1px 2px rgba(0,0,0,.05), 0 10px 24px rgba(0,0,0,.06);
   --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
@@ -35,6 +36,7 @@ img{max-width:100%}[hidden]{display:none!important}
     --blue:#7FA9F0; --red:#F0796F;
     --chain:#23539F; --chain-field:rgba(0,0,0,.32);
     --flight-bg:#15222F; --flight-line:#27384A;
+    --oat-bg:#2B2620; --oat-line:#3E362C;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35);
   }
 }
@@ -45,6 +47,7 @@ img{max-width:100%}[hidden]{display:none!important}
   --blue:#7FA9F0; --red:#F0796F;
   --chain:#23539F; --chain-field:rgba(0,0,0,.32);
   --flight-bg:#15222F; --flight-line:#27384A;
+  --oat-bg:#2B2620; --oat-line:#3E362C;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
@@ -138,11 +141,18 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
 .flight .meta input, .flight .meta textarea{border:0; background:transparent; width:100%; font-size:13px; resize:none; overflow:hidden; line-height:1.45; font-family:var(--sans)}
 .flight .meta .no{font-family:var(--mono); font-weight:600; font-size:13.5px}
 .flight .meta .dur{color:var(--ink-2); font-size:13px}
+
+/* 열차 · 장거리 버스 (항공편 양식 재사용, 오트밀 배경 + 여백만 축소해 컴팩트하게) */
+.flight.altmode{background:var(--oat-bg); padding:7px 10px; gap:3px 8px}
+.flight.altmode .plane svg{width:24px; height:15px}
+.flight.altmode .meta{padding-left:9px; border-left-color:var(--oat-line)}
+.flight.altmode .term{margin-top:-1px}
 .nextday{display:inline-flex; align-items:center; gap:3px; font-size:11.5px; color:var(--ink-2); cursor:pointer; font-family:var(--sans)}
 .nextday input{accent-color:var(--blue)}
 @media (max-width:700px){
   .flight{grid-template-columns:1fr 30px 1fr; }
   .flight .meta{grid-column:1 / -1; border-left:0; border-top:1px solid var(--flight-line); padding:8px 0 0; margin-top:2px}
+  .flight.altmode .meta{border-top-color:var(--oat-line)}
 }
 
 /* move / transit */
@@ -708,6 +718,11 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   var MOVENAME={bus:"버스",train:"기차",metro:"지하철",taxi:"택시·차량",walk:"도보"};
   var PLANE='<svg viewBox="0 0 40 24" fill="currentColor" aria-hidden="true"><path d="M39 12 C36 10.2 30 9.6 24 9.5 L6 9.9 C3 10.2 2 11 2 12 C2 13 3 13.8 6 14.1 L24 14.5 C30 14.4 36 13.8 39 12 Z"/><path d="M25 10 L13.5 2.8 L10 2.8 L16 10 Z"/><path d="M25 14 L13.5 21.2 L10 21.2 L16 14 Z"/><path d="M9 10.2 L4.4 6.4 L2.8 6.4 L5.6 10.2 Z"/><path d="M9 13.8 L4.4 17.6 L2.8 17.6 L5.6 13.8 Z"/></svg>';
   var PIN=svg('<path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>');
+  var KINDLABEL={
+    flight:{portPh:{from:"출발 공항(코드)", to:"도착 공항(코드)"}, term:"TERMINAL NO", no:"편명 (예: KE927)", air:"항공사", dur:"※ 비행시간 · 좌석 · 기종", icon:PLANE},
+    train: {portPh:{from:"출발역", to:"도착역"}, term:"PLATFORM NO", no:"열차편명 (예: AVE 03621)", air:"철도회사", dur:"※ 소요시간 · 좌석", icon:MOVEIC.train},
+    bus:   {portPh:{from:"출발지", to:"도착지"}, term:"PLATFORM NO", no:"버스편명 · 노선", air:"버스회사", dur:"※ 소요시간 · 좌석", icon:MOVEIC.bus}
+  };
   var TEL=svg('<path d="M5 4h3.5l1.6 4-2 1.4a12 12 0 0 0 5.5 5.5l1.4-2 4 1.6V19a1.5 1.5 0 0 1-1.7 1.5A15.5 15.5 0 0 1 3.5 5.7 1.5 1.5 0 0 1 5 4z"/>');
 
   /* ---------- storage (Firebase Realtime Database + local cache) ---------- */
@@ -962,11 +977,13 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   }
 
   function flightBlock(b,day){
+    var kind = (b.kind==="train"||b.kind==="bus") ? b.kind : "flight";
+    var KL = KINDLABEL[kind];
     var w=E("div","blk");
-    var f=E("div","flight");
+    var f=E("div", kind==="flight" ? "flight" : "flight altmode "+kind);
     function port(which){
       var p=E("div","port");
-      p.appendChild(area("ap", which==="from"?b.from:b.to, which==="from"?"출발 공항(코드)":"도착 공항(코드)",
+      p.appendChild(area("ap", which==="from"?b.from:b.to, KL.portPh[which],
         function(v){ if(which==="from") b.from=v; else b.to=v; }));
       var row=E("div","tmrow");
       var pfx=E("span","dpfx", dnum(day, which==="to"&&b.plus?1:0));
@@ -976,7 +993,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       row.appendChild(E("span","tag", which==="from"?"출발":"도착"));
       p.appendChild(row);
       var term=E("div","term");
-      term.appendChild(E("span",null,"TERMINAL NO :"));
+      term.appendChild(E("span",null,KL.term+" :"));
       term.appendChild(inp("", which==="from"?b.depT:b.arrT, "—",
         function(v){ if(which==="from") b.depT=v; else b.arrT=v; }));
       p.appendChild(term);
@@ -990,12 +1007,12 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       return p;
     }
     f.appendChild(port("from"));
-    f.appendChild(iconSpan(PLANE,"plane"));
+    f.appendChild(iconSpan(KL.icon,"plane"));
     f.appendChild(port("to"));
     var meta=E("div","meta");
-    meta.appendChild(inp("no", b.no, "편명 (예: KE927)", function(v){ b.no=v; }));
-    meta.appendChild(area("", b.air, "항공사", function(v){ b.air=v; }));
-    meta.appendChild(area("dur", b.dur, "※ 비행시간 · 좌석 · 기종", function(v){ b.dur=v; }));
+    meta.appendChild(inp("no", b.no, KL.no, function(v){ b.no=v; }));
+    meta.appendChild(area("", b.air, KL.air, function(v){ b.air=v; }));
+    meta.appendChild(area("dur", b.dur, KL.dur, function(v){ b.dur=v; }));
     f.appendChild(meta);
     w.appendChild(f);
     return w;
@@ -1209,11 +1226,11 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       });
 
       var add=E("div","addrow");
-      [["항공편","flight"],["이동 · 경로","move"],["숙소 · 장소","place"],["메모","note"]].forEach(function(spec){
+      [["항공편","flight"],["열차","train"],["장거리 버스","bus"],["이동 · 경로","move"],["숙소 · 장소","place"],["메모","note"]].forEach(function(spec){
         var btn=E("button",null,"＋ "+spec[0]); btn.type="button";
         btn.addEventListener("click",function(){
           var t=spec[1], nb;
-          if(t==="flight") nb={type:"flight",from:"",to:"",dep:"",arr:"",depT:"",arrT:"",no:"",air:"",dur:"",plus:false};
+          if(t==="flight"||t==="train"||t==="bus") nb={type:"flight",kind:t,from:"",to:"",dep:"",arr:"",depT:"",arrT:"",no:"",air:"",dur:"",plus:false};
           else if(t==="move") nb={type:"move",kind:"bus",txt:"",stops:"",label:""};
           else if(t==="place") nb={type:"place",en:"",ko:"",addr:"",tel:"",resv:"",url:"",cap:"찾아가는법",photos:["",""]};
           else nb={type:"note",txt:""};
