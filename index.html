@@ -208,6 +208,41 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
   .qrbox .cap, .qrbox .url{text-align:left}
 }
 
+/* 탭 전환 (일정 · 투어) */
+.tabbar{display:flex; gap:6px; margin:16px 0 2px}
+.tabbtn{
+  appearance:none; border:1px solid var(--line); background:transparent; color:var(--ink-2);
+  border-radius:7px; padding:7px 16px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--sans);
+}
+.tabbtn:hover{border-color:var(--ink-3); color:var(--ink)}
+.tabbtn.on{background:var(--ink); color:var(--sheet); border-color:var(--ink)}
+
+/* 투어 탭 */
+.tourcard{padding:16px 2px; border-top:1px solid var(--line-2)}
+.tourtitle{display:block; width:100%; border:0; background:transparent; font-size:15.5px; font-weight:700; margin-bottom:10px; font-family:var(--sans)}
+.tourgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px}
+.tourcol{display:flex; flex-direction:column; gap:6px; min-width:0}
+.tourshot{
+  position:relative; aspect-ratio:4/3; border-radius:10px; overflow:hidden;
+  background:var(--band); border:1px solid var(--line-2);
+  display:flex; align-items:center; justify-content:center;
+}
+.tourshot img{width:100%; height:100%; object-fit:cover; display:block}
+.tourshot .ph{color:var(--ink-3); font-size:10.5px; text-align:center; padding:0 6px; line-height:1.35}
+.tourshot input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer}
+.tourshot .clr{position:absolute; top:4px; right:4px; border:0; background:rgba(0,0,0,.5); color:#fff; border-radius:50%; width:20px; height:20px; font-size:12px; line-height:1; cursor:pointer; display:none}
+.tourshot.has .clr{display:block}
+.tourcap{border:0; background:transparent; width:100%; text-align:center; font-size:13px; font-weight:600; font-family:var(--sans)}
+.tourdesc{
+  grid-column:1 / -1; border:0; background:transparent; width:100%; resize:none;
+  font-size:14px; line-height:1.65; margin-top:10px; border-top:1px solid var(--line-2); padding-top:12px; font-family:var(--sans);
+}
+@media (max-width:640px){
+  .tourgrid{gap:8px}
+  .tourshot .ph{font-size:9px}
+  .tourcap{font-size:12px}
+}
+
 /* note */
 .note{display:flex; align-items:flex-start; gap:7px; padding:5px 2px}
 .note .mk{color:var(--ink-2); font-size:13.5px; padding-top:3px}
@@ -248,7 +283,8 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
 @media print{
   body{background:#fff}
   .sheet{box-shadow:none; max-width:none; padding:0}
-  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url, .dayx{display:none!important}
+  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url, .dayx, .tabbar{display:none!important}
+  #days, #tours{display:block!important}
   .day{margin-top:20px}
   .flight, .chain, .place, .refcard{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   @page{size:A4; margin:12mm}
@@ -268,7 +304,13 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     </div>
   </header>
 
+  <div class="tabbar">
+    <button class="tabbtn on" id="tabDays" type="button">일정</button>
+    <button class="tabbtn" id="tabTours" type="button">투어</button>
+  </div>
+
   <main id="days"></main>
+  <main id="tours" hidden></main>
 
 
   <details class="panel" id="panel">
@@ -767,7 +809,21 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(!Array.isArray(D.blocks)) D.blocks=[];
       if(D.note==null) D.note="";
     });
+    obj.tours = normTours(obj.tours);
     return obj;
+  }
+  /* 투어 카드 배열도 항공편/장소와 같은 이유로 항상 같은 모양으로 맞춰줍니다 */
+  function normTours(list){
+    if(!Array.isArray(list)) return [];
+    list.forEach(function(t){
+      if(!Array.isArray(t.photos)) t.photos=["","",""];
+      while(t.photos.length<3) t.photos.push("");
+      if(!Array.isArray(t.caps)) t.caps=["","",""];
+      while(t.caps.length<3) t.caps.push("");
+      if(t.title==null) t.title="";
+      if(t.desc==null) t.desc="";
+    });
+    return list;
   }
 
   function load(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
@@ -806,7 +862,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
     lastSynced = stableStringify(state);
     titleIn.value = state.title || "유럽 출장 스케줄";
-    paintRange(); render();
+    paintRange(); render(); renderTours();
   }
 
   /* 공용 저장소(Firebase)와 연결합니다 — 처음 불러오기 + 이후 실시간 반영 */
@@ -849,6 +905,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
 
   /* ---------- default ---------- */
   function blankDay(){ return {wx:[], note:"", blocks:[]}; }
+  function blankTour(){ return {title:"", photos:["","",""], caps:["","",""], desc:""}; }
   var CONFIRMED = {
     "2026-09-29": {from:"인천(ICN)", depT:"2", dep:"09:55",
                    to:"마드리드 바라하스(MAD)", arrT:"1", arr:"18:00", plus:false,
@@ -873,7 +930,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       {type:"note", txt:"22:00 출발 — 체크아웃 후 말펜사 공항으로 이동, 3시간 전 도착 기준으로 역산"},
       Object.assign({type:"flight"}, CONFIRMED["2026-10-13"])
     ];
-    return {title:"유럽 출장 스케줄", dates:list, days:d, seedVersion:2, dateFix:1};
+    return {title:"유럽 출장 스케줄", dates:list, days:d, tours:[], seedVersion:2, dateFix:1};
   }
   var state=load();
   if(!state||!state.days) state=seed();
@@ -888,6 +945,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(!Array.isArray(D.blocks)) D.blocks=[];
       if(D.note==null) D.note="";
     });
+    state.tours = normTours(state.tours);
   }
   normalize();
 
@@ -1076,6 +1134,27 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     fr.readAsDataURL(file);
   }
 
+  /* 투어 사진은 정사각형이 아니라 가로형(4:3)으로 잘라 저장합니다 */
+  function shrinkPhotoWide(file, cb){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var W=560, H=420, c=document.createElement("canvas"); c.width=W; c.height=H;
+        var ctx=c.getContext("2d");
+        var target=W/H, ratio=img.width/img.height, sx,sy,sw,sh;
+        if(ratio>target){ sh=img.height; sw=sh*target; sx=(img.width-sw)/2; sy=0; }
+        else{ sw=img.width; sh=sw/target; sx=0; sy=(img.height-sh)/2; }
+        ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);
+        cb(c.toDataURL("image/jpeg",0.76));
+      };
+      img.onerror=function(){ cb(null); };
+      img.src=fr.result;
+    };
+    fr.onerror=function(){ cb(null); };
+    fr.readAsDataURL(file);
+  }
+
   function drawQR(canvas, url){
     try{
       if(!url){ return false; }
@@ -1161,6 +1240,67 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     n.appendChild(area("", b.txt, "메모 (예: 샤를드골 공항 철도로 터미널2에서 터미널3으로 이동)", function(v){ b.txt=v; }));
     w.appendChild(n);
     return w;
+  }
+
+  /* ---------- 투어 탭 ---------- */
+  function tourTools(idx){
+    var t=E("div","blktools");
+    var up=E("button",null,"▲"); up.type="button"; up.title="위로";
+    var dn=E("button",null,"▼"); dn.type="button"; dn.title="아래로";
+    var rm=E("button","rm","✕"); rm.type="button"; rm.title="삭제";
+    var arr=state.tours;
+    up.addEventListener("click",function(){ if(idx>0){ arr.splice(idx-1,0,arr.splice(idx,1)[0]); saveLocalDraft(); renderTours(); } });
+    dn.addEventListener("click",function(){ if(idx<arr.length-1){ arr.splice(idx+1,0,arr.splice(idx,1)[0]); saveLocalDraft(); renderTours(); } });
+    rm.addEventListener("click",function(){ arr.splice(idx,1); saveLocalDraft(); renderTours(); });
+    t.appendChild(up); t.appendChild(dn); t.appendChild(rm);
+    return t;
+  }
+
+  function tourCard(t, idx){
+    var w=E("div","blk tourcard");
+    w.appendChild(inp("tourtitle", t.title, "투어 제목 (예: 산티아고 구시가지 투어)", function(v){ t.title=v; }));
+
+    var grid=E("div","tourgrid");
+    t.photos.slice(0,3).forEach(function(src,i){
+      var col=E("div","tourcol");
+      var shot=E("div","tourshot"+(src?" has":""));
+      if(src){ var im=new Image(); im.src=src; im.alt=""; shot.appendChild(im); }
+      else shot.appendChild(E("div","ph","사진 추가"));
+      var file=document.createElement("input"); file.type="file"; file.accept="image/*";
+      file.addEventListener("change",function(){
+        var f=file.files && file.files[0]; if(!f) return;
+        shrinkPhotoWide(f,function(d){ if(d){ t.photos[i]=d; saveLocalDraft(); renderTours(); } });
+      });
+      shot.appendChild(file);
+      var clr=E("button","clr","×"); clr.type="button"; clr.title="사진 삭제";
+      clr.addEventListener("click",function(e){ e.preventDefault(); t.photos[i]=""; saveLocalDraft(); renderTours(); });
+      shot.appendChild(clr);
+      col.appendChild(shot);
+      col.appendChild(inp("tourcap", t.caps[i], "어디인지 (예: 산티아고 대성당)", function(v){ t.caps[i]=v; }));
+      grid.appendChild(col);
+    });
+    w.appendChild(grid);
+
+    w.appendChild(area("tourdesc", t.desc, "추천 동선 · 일정 설명 (예: 공항 → 대성당/오브라도이로 광장 → 대성당 주변 골목 → 시장 → 알라메다 공원 → 구시가지에서 식사)", function(v){ t.desc=v; }));
+
+    w.appendChild(tourTools(idx));
+    return w;
+  }
+
+  function renderTours(){
+    var host=document.getElementById("tours");
+    host.innerHTML="";
+    var sec=E("section","day");
+    var head=E("div","dayhead");
+    head.appendChild(E("span","bigdate","투어"));
+    sec.appendChild(head);
+    state.tours.forEach(function(t,idx){ sec.appendChild(tourCard(t,idx)); });
+    var add=E("div","addrow");
+    var btn=E("button",null,"＋ 투어 추가"); btn.type="button";
+    btn.addEventListener("click",function(){ state.tours.push(blankTour()); saveLocalDraft(); renderTours(); });
+    add.appendChild(btn);
+    sec.appendChild(add);
+    host.appendChild(sec);
   }
 
   /* ---------- weather ---------- */
@@ -1293,14 +1433,25 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(!next||!next.days) throw new Error("bad");
       state=next; normalize();
       titleIn.value=state.title||"";
-      saveLocalDraft(); paintRange(); render(); setStatus("불러왔습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
+      saveLocalDraft(); paintRange(); render(); renderTours(); setStatus("불러왔습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
     }catch(e){ setStatus("형식이 맞지 않아 불러오지 못했습니다. 백업 글자 전체를 붙여넣었는지 확인해 주세요."); }
   });
   document.getElementById("btnReset").addEventListener("click",function(){
-    state=seed(); normalize(); titleIn.value=state.title; saveLocalDraft(); paintRange(); render(); setStatus("처음 상태로 되돌렸습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
+    state=seed(); normalize(); titleIn.value=state.title; saveLocalDraft(); paintRange(); render(); renderTours(); setStatus("처음 상태로 되돌렸습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
   });
 
-  paintRange(); render();
+  var tabDays=document.getElementById("tabDays"), tabTours=document.getElementById("tabTours");
+  var daysHost=document.getElementById("days"), toursHost=document.getElementById("tours");
+  function showTab(t){
+    var isDays = t!=="tours";
+    daysHost.hidden=!isDays; toursHost.hidden=isDays;
+    tabDays.classList.toggle("on", isDays);
+    tabTours.classList.toggle("on", !isDays);
+  }
+  tabDays.addEventListener("click",function(){ showTab("days"); });
+  tabTours.addEventListener("click",function(){ showTab("tours"); });
+
+  paintRange(); render(); renderTours();
   setStatus(load()? "이 기기에 저장된 내용을 불러왔습니다." : "아직 저장된 내용이 없습니다. 입력 후 위 \"저장\" 버튼을 눌러주세요.");
   initSync();
 })();
