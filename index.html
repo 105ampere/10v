@@ -76,6 +76,8 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
 }
 .ghost:hover{border-color:var(--ink-3); color:var(--ink)}
 .ghost:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+.ghost.primary{background:var(--blue); border-color:var(--blue); color:#fff}
+.ghost.primary:hover{background:var(--blue); border-color:var(--blue); color:#fff; opacity:.9}
 
 /* ---------- day ---------- */
 .day{margin-top:30px; break-inside:avoid}
@@ -212,6 +214,8 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
 input:focus, textarea:focus, select:focus{outline:none}
 input:focus-visible, textarea:focus-visible{outline:2px solid var(--blue); outline-offset:1px; border-radius:2px}
 input::placeholder, textarea::placeholder{color:var(--ph); opacity:1}
+[disabled]{opacity:.4; cursor:default}
+input[readonly], textarea[readonly]{cursor:default}
 
 /* ---------- panel ---------- */
 
@@ -234,7 +238,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
 @media print{
   body{background:#fff}
   .sheet{box-shadow:none; max-width:none; padding:0}
-  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url{display:none!important}
+  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url, .dayx{display:none!important}
   .day{margin-top:20px}
   .flight, .chain, .place, .refcard{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   @page{size:A4; margin:12mm}
@@ -248,6 +252,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     <h1><input id="docTitle" aria-label="문서 제목" value="유럽 출장 스케줄"></h1>
     <p class="range" id="docRange">2026.09.29 ~ 2026.10.14</p>
     <div class="metabar">
+      <button class="ghost primary" id="btnSave">저장</button>
       <button class="ghost" id="btnPrint">인쇄 · PDF</button>
       <button class="ghost" id="btnPanel">저장 · 백업</button>
     </div>
@@ -259,7 +264,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   <details class="panel" id="panel">
     <summary>저장 · 백업 · 오프라인 사용법</summary>
     <div class="pbody">
-      <p>입력한 내용과 사진은 <b>인터넷에 연결되어 있으면 자동으로 공용 저장소에 저장</b>되고, 어떤 브라우저·기기에서 열어도 같은 내용이 보이도록 동기화됩니다. 인터넷이 없는 상태(비행기 안 등)에서 보시려면 출국 전에 위 <b>"인쇄 · PDF"</b> 버튼으로 미리 인쇄해두시는 걸 권장드려요. QR코드는 인터넷 없이 이 화면에서 직접 만들어집니다.</p>
+      <p>입력하는 동안에는 <b>이 기기에만 임시로 저장</b>되고, 다른 브라우저·기기에는 반영되지 않습니다. 위쪽의 <b>"저장"</b> 버튼을 눌러야 그 내용이 공용 저장소에 반영되어 어떤 기기에서 열어도 같은 내용이 보이게 됩니다. 인터넷이 없는 상태(비행기 안 등)에서 보시려면 출국 전에 위 <b>"인쇄 · PDF"</b> 버튼으로 미리 인쇄해두시는 걸 권장드려요. QR코드는 인터넷 없이 이 화면에서 직접 만들어집니다.</p>
       <p>아래 백업 글자는 공용 저장소에 문제가 생겼을 때를 대비한 예비용입니다 — ① 이 칸의 글자를 <b>복사</b> → ② 다른 화면을 열고 아래 칸에 <b>붙여넣기</b> → ③ <b>붙여넣은 내용 불러오기</b>.</p>
       <div class="rangerow">
         <label>기간 <input type="date" id="rangeFrom"></label>
@@ -754,6 +759,15 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   var st=document.getElementById("statusLine"), tSave=null;
   function setStatus(t){ if(st) st.textContent=t; }
 
+  /* 입력하는 동안에는 이 기기에만(임시로) 저장해두고, 다른 기기·화면에는
+     아직 반영하지 않습니다 — 위쪽 "저장" 버튼을 눌러야 모두에게 반영됩니다. */
+  function saveLocalDraft(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+    setStatus("임시 저장됨(이 기기에만) · 다른 화면에 반영하려면 위 \"저장\" 버튼을 눌러주세요");
+  }
+  function queueLocalDraft(){ clearTimeout(tSave); tSave=setTimeout(saveLocalDraft,350); }
+
+  /* "저장" 버튼을 눌렀을 때만 실제로 공용 저장소(Firebase)에 반영합니다 */
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
     lastSynced = stableStringify(state);
@@ -922,12 +936,12 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   function inp(cls,val,ph,on,attrs){
     var i=document.createElement("input"); i.className=cls||""; i.value=val||""; i.placeholder=ph||"";
     if(attrs) Object.keys(attrs).forEach(function(k){ i.setAttribute(k,attrs[k]); });
-    i.addEventListener("input",function(){ on(i.value); queueSave(); });
+    i.addEventListener("input",function(){ on(i.value); queueLocalDraft(); });
     return i;
   }
   function area(cls,val,ph,on){
     var t=document.createElement("textarea"); t.className=cls||""; t.value=val||""; t.placeholder=ph||""; t.rows=1;
-    t.addEventListener("input",function(){ grow(t); on(t.value); queueSave(); });
+    t.addEventListener("input",function(){ grow(t); on(t.value); queueLocalDraft(); });
     requestAnimationFrame(function(){ grow(t); });
     return t;
   }
@@ -940,9 +954,9 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     var dn=E("button",null,"▼"); dn.type="button"; dn.title="아래로";
     var rm=E("button","rm","✕"); rm.type="button"; rm.title="삭제";
     var arr=state.days[day].blocks;
-    up.addEventListener("click",function(){ if(idx>0){ arr.splice(idx-1,0,arr.splice(idx,1)[0]); save(); render(); } });
-    dn.addEventListener("click",function(){ if(idx<arr.length-1){ arr.splice(idx+1,0,arr.splice(idx,1)[0]); save(); render(); } });
-    rm.addEventListener("click",function(){ arr.splice(idx,1); save(); render(); });
+    up.addEventListener("click",function(){ if(idx>0){ arr.splice(idx-1,0,arr.splice(idx,1)[0]); saveLocalDraft(); render(); } });
+    dn.addEventListener("click",function(){ if(idx<arr.length-1){ arr.splice(idx+1,0,arr.splice(idx,1)[0]); saveLocalDraft(); render(); } });
+    rm.addEventListener("click",function(){ arr.splice(idx,1); saveLocalDraft(); render(); });
     t.appendChild(up); t.appendChild(dn); t.appendChild(rm);
     return t;
   }
@@ -969,7 +983,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(which==="to"){
         var nd=E("label","nextday");
         var cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!b.plus;
-        cb.addEventListener("change",function(){ b.plus=cb.checked; pfx.textContent=dnum(day,cb.checked?1:0); queueSave(); });
+        cb.addEventListener("change",function(){ b.plus=cb.checked; pfx.textContent=dnum(day,cb.checked?1:0); queueLocalDraft(); });
         nd.appendChild(cb); nd.appendChild(E("span",null,"다음날 도착"));
         p.appendChild(nd);
       }
@@ -1007,7 +1021,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     var ta=area("", b.stops, "Aéroport/Promenade(승차역), La Vallière, Ferber, …", function(v){ b.stops=v; });
     ta.addEventListener("blur",function(){
       var parts=ta.value.split(/\s*(?:»|,|\n)\s*/).filter(function(x){ return x.trim()!==""; });
-      ta.value=parts.join(" » "); b.stops=ta.value; grow(ta); queueSave();
+      ta.value=parts.join(" » "); b.stops=ta.value; grow(ta); queueLocalDraft();
     });
     chain.appendChild(ta);
     var hasChain = !!(b.stops||b.label);
@@ -1021,7 +1035,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     });
     m.appendChild(toggle);
     sel.addEventListener("change",function(){
-      b.kind=sel.value; ico.innerHTML=MOVEIC[b.kind]; save();
+      b.kind=sel.value; ico.innerHTML=MOVEIC[b.kind]; saveLocalDraft();
     });
     w.appendChild(m); w.appendChild(chain);
     return w;
@@ -1067,11 +1081,11 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       var file=document.createElement("input"); file.type="file"; file.accept="image/*";
       file.addEventListener("change",function(){
         var f=file.files && file.files[0]; if(!f) return;
-        shrinkPhoto(f,function(d){ if(d){ b.photos[i]=d; save(); render(); } });
+        shrinkPhoto(f,function(d){ if(d){ b.photos[i]=d; saveLocalDraft(); render(); } });
       });
       shot.appendChild(file);
       var clr=E("button","clr","×"); clr.type="button"; clr.title="사진 삭제";
-      clr.addEventListener("click",function(e){ e.preventDefault(); b.photos[i]=""; save(); render(); });
+      clr.addEventListener("click",function(e){ e.preventDefault(); b.photos[i]=""; saveLocalDraft(); render(); });
       shot.appendChild(clr);
       pw.appendChild(shot);
     });
@@ -1090,24 +1104,33 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     p.appendChild(info);
 
     var q=E("div","qrbox");
-    var cv=document.createElement("canvas");
-    var empty=E("div","empty","링크 입력 시 QR 생성");
-    q.appendChild(cv); q.appendChild(empty);
-    var capwrap=E("div","capwrap");
-    capwrap.appendChild(inp("cap", b.cap, "찾아가는법", function(v){ b.cap=v; }));
-    var urlIn=inp("url", b.url, "지도 · 블로그 링크 붙여넣기", function(v){ b.url=v; refreshQR(); });
-    capwrap.appendChild(urlIn);
-    q.appendChild(capwrap);
-    function refreshQR(){
-      clearTimeout(urlIn._t);
-      urlIn._t=setTimeout(function(){
-        var okQR = b.url && b.url.trim() ? drawQR(cv, b.url.trim()) : false;
-        cv.style.display = okQR ? "block" : "none";
-        empty.style.display = okQR ? "none" : "flex";
-        empty.textContent = (b.url && b.url.trim() && !okQR) ? "링크가 너무 깁니다" : "링크 입력 시 QR 생성";
-      },300);
+    if(b.qrHidden){
+      var addQ=E("button","addwx","＋ 찾아가는법"); addQ.type="button";
+      addQ.addEventListener("click",function(){ b.qrHidden=false; saveLocalDraft(); render(); });
+      q.appendChild(addQ);
+    } else {
+      var cv=document.createElement("canvas");
+      var empty=E("div","empty","링크 입력 시 QR 생성");
+      q.appendChild(cv); q.appendChild(empty);
+      var capwrap=E("div","capwrap");
+      capwrap.appendChild(inp("cap", b.cap, "찾아가는법", function(v){ b.cap=v; }));
+      var urlIn=inp("url", b.url, "지도 · 블로그 링크 붙여넣기", function(v){ b.url=v; refreshQR(); });
+      capwrap.appendChild(urlIn);
+      var rmQ=E("button","dayx","찾아가는법 삭제"); rmQ.type="button";
+      rmQ.addEventListener("click",function(){ b.qrHidden=true; saveLocalDraft(); render(); });
+      capwrap.appendChild(rmQ);
+      q.appendChild(capwrap);
+      function refreshQR(){
+        clearTimeout(urlIn._t);
+        urlIn._t=setTimeout(function(){
+          var okQR = b.url && b.url.trim() ? drawQR(cv, b.url.trim()) : false;
+          cv.style.display = okQR ? "block" : "none";
+          empty.style.display = okQR ? "none" : "flex";
+          empty.textContent = (b.url && b.url.trim() && !okQR) ? "링크가 너무 깁니다" : "링크 입력 시 QR 생성";
+        },300);
+      }
+      refreshQR();
     }
-    refreshQR();
     p.appendChild(q);
 
     w.appendChild(p);
@@ -1138,11 +1161,11 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       var o=document.createElement("option"); o.value=k; o.textContent=WXNAME[k];
       if(w.ic===k) o.selected=true; sel.appendChild(o);
     });
-    sel.addEventListener("change",function(){ w.ic=sel.value; ib.innerHTML=WX[w.ic]; save(); });
+    sel.addEventListener("change",function(){ w.ic=sel.value; ib.innerHTML=WX[w.ic]; saveLocalDraft(); });
     ib.appendChild(sel);
     box.appendChild(ib);
     var x=E("button","x","×"); x.type="button"; x.title="날씨 삭제";
-    x.addEventListener("click",function(){ state.days[day].wx.splice(i,1); save(); render(); });
+    x.addEventListener("click",function(){ state.days[day].wx.splice(i,1); saveLocalDraft(); render(); });
     box.appendChild(x);
     return box;
   }
@@ -1162,14 +1185,14 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       var dx=E("button","dayx","날짜 빼기"); dx.type="button"; dx.title="이 날짜를 일정에서 제외";
       dx.addEventListener("click",function(){
         state.dates=state.dates.filter(function(k){ return k!==iso; });
-        save(); render();
+        saveLocalDraft(); render();
       });
       head.appendChild(dx);
       var wxw=E("div","wxwrap");
       D.wx.forEach(function(w,i){ wxw.appendChild(wxRow(iso,w,i)); });
       var aw=E("button","addwx", D.wx.length? "＋ 도시" : "＋ 날씨");
       aw.type="button";
-      aw.addEventListener("click",function(){ D.wx.push({city:"",lo:"",hi:"",ic:"part"}); save(); render(); });
+      aw.addEventListener("click",function(){ D.wx.push({city:"",lo:"",hi:"",ic:"part"}); saveLocalDraft(); render(); });
       wxw.appendChild(aw);
       head.appendChild(wxw);
       sec.appendChild(head);
@@ -1194,7 +1217,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
           else if(t==="move") nb={type:"move",kind:"bus",txt:"",stops:"",label:""};
           else if(t==="place") nb={type:"place",en:"",ko:"",addr:"",tel:"",resv:"",url:"",cap:"찾아가는법",photos:["",""]};
           else nb={type:"note",txt:""};
-          D.blocks.push(nb); save(); render();
+          D.blocks.push(nb); saveLocalDraft(); render();
         });
         add.appendChild(btn);
       });
@@ -1206,7 +1229,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   /* ---------- head widgets ---------- */
   var titleIn=document.getElementById("docTitle");
   titleIn.value=state.title||"유럽 출장 스케줄";
-  titleIn.addEventListener("input",function(){ state.title=titleIn.value; queueSave(); });
+  titleIn.addEventListener("input",function(){ state.title=titleIn.value; queueLocalDraft(); });
   function paintRange(){
     var l=state.dates;
     document.getElementById("docRange").textContent = l.length
@@ -1218,13 +1241,15 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
 
   document.getElementById("btnPrint").addEventListener("click",function(){ window.print(); });
 
+  document.getElementById("btnSave").addEventListener("click",function(){ save(); });
+
   document.getElementById("btnRange").addEventListener("click",function(){
     var f=document.getElementById("rangeFrom").value, t=document.getElementById("rangeTo").value;
     if(!f||!t||f>t){ setStatus("시작일이 종료일보다 늦습니다. 날짜를 다시 확인해 주세요."); return; }
     state.dates=days(f,t);
     state.dates.forEach(function(k){ if(!state.days[k]) state.days[k]=blankDay(); });
-    save(); paintRange(); render();
-    setStatus("기간을 " + f + " ~ " + t + " 로 바꿨습니다. 적어둔 내용은 날짜별로 그대로 남아 있습니다.");
+    saveLocalDraft(); paintRange(); render();
+    setStatus("기간을 " + f + " ~ " + t + " 로 바꿨습니다. 적어둔 내용은 날짜별로 그대로 남아 있습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
   });
   var io=document.getElementById("io");
   function fillIO(){ io.value=JSON.stringify(state); }
@@ -1251,15 +1276,15 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(!next||!next.days) throw new Error("bad");
       state=next; normalize();
       titleIn.value=state.title||"";
-      save(); paintRange(); render(); setStatus("불러왔습니다.");
+      saveLocalDraft(); paintRange(); render(); setStatus("불러왔습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
     }catch(e){ setStatus("형식이 맞지 않아 불러오지 못했습니다. 백업 글자 전체를 붙여넣었는지 확인해 주세요."); }
   });
   document.getElementById("btnReset").addEventListener("click",function(){
-    state=seed(); normalize(); titleIn.value=state.title; save(); paintRange(); render(); setStatus("처음 상태로 되돌렸습니다.");
+    state=seed(); normalize(); titleIn.value=state.title; saveLocalDraft(); paintRange(); render(); setStatus("처음 상태로 되돌렸습니다. (아직 이 기기에만 저장됨 — 위 \"저장\" 버튼을 눌러 반영하세요)");
   });
 
   paintRange(); render();
-  setStatus(load()? "이 기기에 저장된 내용을 불러왔습니다." : "아직 저장된 내용이 없습니다. 입력하면 자동 저장됩니다.");
+  setStatus(load()? "이 기기에 저장된 내용을 불러왔습니다." : "아직 저장된 내용이 없습니다. 입력 후 위 \"저장\" 버튼을 눌러주세요.");
   initSync();
 })();
 </script>
