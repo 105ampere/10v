@@ -194,11 +194,10 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
   display:flex; align-items:center; justify-content:center; color:var(--ink-3); font-size:10.5px;
   text-align:center; padding:6px; line-height:1.3;
 }
-.qrbox .cap{border:0; background:transparent; width:100%; text-align:center; font-size:12.5px; font-weight:600; margin-top:4px}
-.qrbox .url{border:0; background:transparent; width:100%; text-align:center; font-size:10.5px; color:var(--ink-2); font-family:var(--mono); margin-top:2px}
+.qrbox .url{border:0; background:transparent; width:100%; text-align:center; font-size:10.5px; color:var(--ink-2); font-family:var(--mono); margin-top:6px}
 .qrbox .maplink{
   display:flex; align-items:center; justify-content:center; gap:5px;
-  margin-top:6px; padding:6px 10px; border-radius:6px;
+  margin-top:4px; padding:6px 10px; border-radius:6px;
   background:var(--band); color:var(--ink-2); font-size:11.5px; font-weight:600;
   text-decoration:none; font-family:var(--sans);
 }
@@ -210,7 +209,7 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
   .qrbox{grid-column:1 / -1; display:flex; align-items:center; gap:10px; text-align:left}
   .qrbox canvas, .qrbox .empty{margin:0}
   .qrbox .capwrap{flex:1}
-  .qrbox .cap, .qrbox .url{text-align:left}
+  .qrbox .url{text-align:left}
   .qrbox .maplink{justify-content:flex-start}
 }
 
@@ -1177,12 +1176,11 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       var empty=E("div","empty","링크 입력 시 QR 생성");
       q.appendChild(cv); q.appendChild(empty);
       var capwrap=E("div","capwrap");
-      capwrap.appendChild(inp("cap", b.cap, "찾아가는법", function(v){ b.cap=v; }));
-      var urlIn=inp("url", b.url, "지도 · 블로그 링크 붙여넣기", function(v){ b.url=v; refreshQR(); refreshMapLink(); });
-      capwrap.appendChild(urlIn);
       var mapLink=document.createElement("a"); mapLink.className="maplink"; mapLink.target="_blank"; mapLink.rel="noopener noreferrer";
       mapLink.textContent="↗ 지도에서 열기";
       capwrap.appendChild(mapLink);
+      var urlIn=inp("url", b.url, "지도 · 블로그 링크 붙여넣기", function(v){ b.url=v; refreshQR(); refreshMapLink(); });
+      capwrap.appendChild(urlIn);
       var rmQ=E("button","dayx","찾아가는법 삭제"); rmQ.type="button";
       rmQ.addEventListener("click",function(){ b.qrHidden=true; saveLocalDraft(); render(); });
       capwrap.appendChild(rmQ);
