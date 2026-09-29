@@ -85,7 +85,10 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
 /* ---------- day ---------- */
 .day{margin-top:30px}
 .dayhead{display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; border-bottom:2.5px solid var(--rule); padding-bottom:5px}
-.bigdate{font-family:var(--display); font-size:33px; font-weight:700; line-height:1; letter-spacing:-.01em; font-variant-numeric:tabular-nums}
+.bigdate{font-family:var(--display); font-size:33px; font-weight:700; line-height:1; letter-spacing:-.01em; font-variant-numeric:tabular-nums; min-width:0}
+.bigdate.range{font-size:22px; word-break:keep-all}
+.rangeset{display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--ph); margin-bottom:5px}
+.rangeend{border:1px solid var(--line); border-radius:5px; background:transparent; color:var(--ink-2); font-size:11px; padding:2px 4px; font-family:var(--sans)}
 .dow{font-family:var(--display); font-size:18px; font-weight:500; line-height:1.6; letter-spacing:.02em}
 .dayhead .today{
   font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; color:#fff; background:var(--blue);
@@ -106,6 +109,15 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
 .addwx:hover{color:var(--blue)}
 .dayx{border:0; background:transparent; color:var(--ph); cursor:pointer; font-size:12px; padding:2px 5px; margin-bottom:6px; border-radius:4px}
 .dayx:hover{color:var(--red); background:var(--band)}
+.dayfold{border:0; background:transparent; color:var(--ink-2); cursor:pointer; font-size:15px; line-height:1; padding:4px 7px; margin-bottom:4px; border-radius:5px}
+.dayfold:hover{background:var(--band); color:var(--ink)}
+.collapsedbar{margin-top:14px}
+.collapsedbtn{
+  display:flex; align-items:center; gap:6px; width:100%;
+  border:1px dashed var(--line); background:transparent; color:var(--ph);
+  border-radius:8px; padding:9px 12px; font-size:13px; font-weight:600; font-family:var(--sans); cursor:pointer;
+}
+.collapsedbtn:hover{border-color:var(--ink-3); color:var(--ink-2); background:var(--band)}
 
 /* ---------- blocks ---------- */
 .blk{position:relative; margin-top:10px; break-inside:avoid}
@@ -273,7 +285,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
 @media print{
   body{background:#fff}
   .sheet{box-shadow:none; max-width:none; padding:0}
-  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url, .qrbox .maplink, .dayx{display:none!important}
+  .metabar, .addrow, .blktools, .panel, .addwx, .wx .x, .qrbox .url, .qrbox .maplink, .dayx, .dayfold, .collapsedbar, .rangeset{display:none!important}
   .day{margin-top:20px}
   .flight, .chain, .place, .refcard{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   @page{size:A4; margin:12mm}
@@ -791,6 +803,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(!Array.isArray(D.wx)) D.wx=[];
       if(!Array.isArray(D.blocks)) D.blocks=[];
       if(D.note==null) D.note="";
+      if(D.collapsed==null) D.collapsed=false;
     });
     return obj;
   }
@@ -873,7 +886,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   function todayISO(){ return isoOf(new Date()); }
 
   /* ---------- default ---------- */
-  function blankDay(){ return {wx:[], note:"", blocks:[]}; }
+  function blankDay(){ return {wx:[], note:"", blocks:[], collapsed:false}; }
   var CONFIRMED = {
     "2026-09-29": {from:"인천(ICN)", depT:"2", dep:"09:55",
                    to:"마드리드 바라하스(MAD)", arrT:"1", arr:"18:00", plus:false,
@@ -912,6 +925,7 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
       if(!Array.isArray(D.wx)) D.wx=[];
       if(!Array.isArray(D.blocks)) D.blocks=[];
       if(D.note==null) D.note="";
+      if(D.collapsed==null) D.collapsed=false;
     });
   }
   normalize();
@@ -1275,60 +1289,169 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
   }
 
   /* ---------- render ---------- */
+  function fmtLong(d){ return (d.getMonth()+1)+"월 "+d.getDate()+"일"; }
+
+  function collapsedBar(runDates){
+    var bar=E("div","collapsedbar");
+    var d1=new Date(runDates[0]+"T00:00:00"), d2=new Date(runDates[runDates.length-1]+"T00:00:00");
+    var label = runDates.length>1 ? (fmtLong(d1)+" ~ "+fmtLong(d2)) : fmtLong(d1);
+    var btn=E("button","collapsedbtn","▶ "+label); btn.type="button"; btn.title="펼치기";
+    btn.addEventListener("click",function(){
+      runDates.forEach(function(k){ state.days[k].collapsed=false; });
+      saveLocalDraft(); render();
+    });
+    bar.appendChild(btn);
+    return bar;
+  }
+
+  function dayCard(card, today){
+    var iso=card.start, D=card.D, grouped=(card.end!==card.start);
+    var d=new Date(iso+"T00:00:00");
+    var sec=E("section","day");
+    var head=E("div","dayhead");
+    var fold=E("button","dayfold","▼"); fold.type="button"; fold.title="날짜 숨기기";
+    fold.addEventListener("click",function(){ D.collapsed=true; saveLocalDraft(); render(); });
+    head.appendChild(fold);
+    if(grouped){
+      var d2=new Date(card.end+"T00:00:00");
+      head.appendChild(E("span","bigdate range", fmtLong(d)+" ~ "+fmtLong(d2)));
+    } else {
+      head.appendChild(E("span","bigdate",(d.getMonth()+1)+"/"+d.getDate()));
+      head.appendChild(E("span","dow",DOW[d.getDay()]+"요일"));
+    }
+    if(card.dates.indexOf(today)!==-1) head.appendChild(E("span","today","오늘"));
+
+    var rangeWrap=E("span","rangeset");
+    rangeWrap.appendChild(E("span","rangelbl","기간(같은 일정 반복)"));
+    var endIn=document.createElement("input"); endIn.type="date"; endIn.className="rangeend";
+    endIn.min=iso;
+    endIn.value = grouped ? card.end : "";
+    endIn.title="종료일을 넣으면 그 날짜까지 이 카드 하나로 합쳐집니다";
+    var committing=false;
+    function commitEnd(){
+      if(committing) return; committing=true;
+      var v=endIn.value;
+      if(!v){
+        if(D.groupEnd){ delete D.groupEnd; saveLocalDraft(); render(); }
+        committing=false; return;
+      }
+      if(v<=iso){
+        setStatus("시작일보다 뒤 날짜를 선택해 주세요.");
+        endIn.value = grouped ? card.end : "";
+        committing=false; return;
+      }
+      /* 종료일까지 아직 없는 날짜가 있으면 자동으로 채워 넣어서 항상 합쳐지게 합니다 */
+      if(state.dates.indexOf(v)===-1){
+        var k=iso;
+        while(k<=v){
+          if(state.dates.indexOf(k)===-1){ state.dates.push(k); if(!state.days[k]) state.days[k]=blankDay(); }
+          var dk=new Date(k+"T00:00:00"); dk.setDate(dk.getDate()+1); k=isoOf(dk);
+        }
+        state.dates=state.dates.slice().sort();
+      }
+      D.groupEnd=v; saveLocalDraft(); render();
+      committing=false;
+    }
+    endIn.addEventListener("change",commitEnd);
+    endIn.addEventListener("input",commitEnd);
+    rangeWrap.appendChild(endIn);
+    head.appendChild(rangeWrap);
+
+    var dx=E("button","dayx","날짜 빼기"); dx.type="button"; dx.title="이 날짜를 일정에서 제외";
+    dx.addEventListener("click",function(){
+      state.dates=state.dates.filter(function(k){ return k!==iso; });
+      saveLocalDraft(); render();
+    });
+    head.appendChild(dx);
+    var wxw=E("div","wxwrap");
+    D.wx.forEach(function(w,i){ wxw.appendChild(wxRow(iso,w,i)); });
+    var aw=E("button","addwx", D.wx.length? "＋ 도시" : "＋ 날씨");
+    aw.type="button";
+    aw.addEventListener("click",function(){ D.wx.push({city:"",lo:"",hi:"",ic:"part"}); saveLocalDraft(); render(); });
+    wxw.appendChild(aw);
+    head.appendChild(wxw);
+    sec.appendChild(head);
+
+    D.blocks.forEach(function(b,idx){
+      var node = b.type==="flight" ? flightBlock(b,iso)
+               : b.type==="move"   ? moveBlock(b,iso)
+               : b.type==="place"  ? placeBlock(b,iso)
+               : b.type==="tour"   ? tourBlock(b,iso)
+               :                     noteBlock(b);
+      node.appendChild(tools(iso,idx));
+      sec.appendChild(node);
+    });
+
+    var add=E("div","addrow");
+    [["항공편","flight"],["열차","train"],["장거리 버스","bus"],["이동 · 경로","move"],["숙소 · 장소","place"],["투어","tour"],["메모","note"]].forEach(function(spec){
+      var btn=E("button",null,"＋ "+spec[0]); btn.type="button";
+      btn.addEventListener("click",function(){
+        var t=spec[1], nb;
+        if(t==="flight"||t==="train"||t==="bus") nb={type:"flight",kind:t,from:"",to:"",dep:"",arr:"",depT:"",arrT:"",no:"",air:"",dur:"",plus:false};
+        else if(t==="move") nb={type:"move",kind:"bus",txt:"",stops:"",label:""};
+        else if(t==="place") nb={type:"place",en:"",ko:"",addr:"",tel:"",resv:"",url:"",cap:"찾아가는법",photos:["",""]};
+        else if(t==="tour") nb={type:"tour",photos:["","",""],caps:["","",""]};
+        else nb={type:"note",txt:""};
+        D.blocks.push(nb); saveLocalDraft(); render();
+      });
+      add.appendChild(btn);
+    });
+    sec.appendChild(add);
+    return sec;
+  }
+
+  /* 종료일(groupEnd)이 지정된 날짜는 그 종료일까지를 카드 하나로 묶습니다
+     (박람회 왕복·숙소 동일처럼 여러 날 내용이 똑같을 때 중복 입력하지 않도록) */
+  function buildCards(){
+    var dates=state.dates, cards=[], i=0;
+    while(i<dates.length){
+      var iso=dates[i], D=state.days[iso];
+      var endIdx=i;
+      if(D.groupEnd){
+        var gi=dates.indexOf(D.groupEnd);
+        if(gi>i) endIdx=gi;
+      }
+      cards.push({start:iso, end:dates[endIdx], dates:dates.slice(i,endIdx+1), D:D});
+      i=endIdx+1;
+    }
+    return cards;
+  }
+
   function render(){
     var host=document.getElementById("days");
     host.innerHTML="";
     var today=todayISO();
-    state.dates.forEach(function(iso){
-      var D=state.days[iso], d=new Date(iso+"T00:00:00");
-      var sec=E("section","day");
-      var head=E("div","dayhead");
-      head.appendChild(E("span","bigdate",(d.getMonth()+1)+"/"+d.getDate()));
-      head.appendChild(E("span","dow",DOW[d.getDay()]+"요일"));
-      if(iso===today) head.appendChild(E("span","today","오늘"));
-      var dx=E("button","dayx","날짜 빼기"); dx.type="button"; dx.title="이 날짜를 일정에서 제외";
-      dx.addEventListener("click",function(){
-        state.dates=state.dates.filter(function(k){ return k!==iso; });
-        saveLocalDraft(); render();
-      });
-      head.appendChild(dx);
-      var wxw=E("div","wxwrap");
-      D.wx.forEach(function(w,i){ wxw.appendChild(wxRow(iso,w,i)); });
-      var aw=E("button","addwx", D.wx.length? "＋ 도시" : "＋ 날씨");
-      aw.type="button";
-      aw.addEventListener("click",function(){ D.wx.push({city:"",lo:"",hi:"",ic:"part"}); saveLocalDraft(); render(); });
-      wxw.appendChild(aw);
-      head.appendChild(wxw);
-      sec.appendChild(head);
-
-      D.blocks.forEach(function(b,idx){
-        var node = b.type==="flight" ? flightBlock(b,iso)
-                 : b.type==="move"   ? moveBlock(b,iso)
-                 : b.type==="place"  ? placeBlock(b,iso)
-                 : b.type==="tour"   ? tourBlock(b,iso)
-                 :                     noteBlock(b);
-        node.appendChild(tools(iso,idx));
-        sec.appendChild(node);
-      });
-
-      var add=E("div","addrow");
-      [["항공편","flight"],["열차","train"],["장거리 버스","bus"],["이동 · 경로","move"],["숙소 · 장소","place"],["투어","tour"],["메모","note"]].forEach(function(spec){
-        var btn=E("button",null,"＋ "+spec[0]); btn.type="button";
-        btn.addEventListener("click",function(){
-          var t=spec[1], nb;
-          if(t==="flight"||t==="train"||t==="bus") nb={type:"flight",kind:t,from:"",to:"",dep:"",arr:"",depT:"",arrT:"",no:"",air:"",dur:"",plus:false};
-          else if(t==="move") nb={type:"move",kind:"bus",txt:"",stops:"",label:""};
-          else if(t==="place") nb={type:"place",en:"",ko:"",addr:"",tel:"",resv:"",url:"",cap:"찾아가는법",photos:["",""]};
-          else if(t==="tour") nb={type:"tour",photos:["","",""],caps:["","",""]};
-          else nb={type:"note",txt:""};
-          D.blocks.push(nb); saveLocalDraft(); render();
-        });
-        add.appendChild(btn);
-      });
-      sec.appendChild(add);
-      host.appendChild(sec);
-    });
+    var cards=buildCards();
+    var i=0;
+    while(i<cards.length){
+      if(cards[i].D.collapsed){
+        var j=i;
+        while(j<cards.length && cards[j].D.collapsed) j++;
+        var runDates=[];
+        cards.slice(i,j).forEach(function(c){ runDates=runDates.concat(c.dates); });
+        host.appendChild(collapsedBar(runDates));
+        i=j;
+      } else {
+        host.appendChild(dayCard(cards[i], today));
+        i++;
+      }
+    }
   }
+
+  /* 인쇄할 때는 접어둔 날짜도 전부 펼쳐서 내보냅니다 (숨김은 화면 정리용일 뿐) */
+  var collapsedForPrint=null;
+  window.addEventListener("beforeprint",function(){
+    collapsedForPrint = state.dates.map(function(k){ return !!state.days[k].collapsed; });
+    state.dates.forEach(function(k){ state.days[k].collapsed=false; });
+    render();
+  });
+  window.addEventListener("afterprint",function(){
+    if(collapsedForPrint){
+      state.dates.forEach(function(k,idx){ state.days[k].collapsed=collapsedForPrint[idx]; });
+      collapsedForPrint=null;
+      render();
+    }
+  });
 
   /* ---------- head widgets ---------- */
   var titleIn=document.getElementById("docTitle");
