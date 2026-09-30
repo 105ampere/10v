@@ -1345,7 +1345,9 @@ textarea.io{width:100%; min-height:120px; padding:9px; border-radius:7px; border
     if(card.dates.indexOf(today)!==-1) head.appendChild(E("span","today","오늘"));
 
     var rangeWrap=E("span","rangeset");
-    rangeWrap.appendChild(E("span","rangelbl","기간(같은 일정 반복)"));
+    var rangelbl=E("span","rangelbl","기간");
+    rangelbl.title="기간(같은 일정 반복) — 종료일을 넣으면 그 날짜까지 이 카드 하나로 합쳐집니다";
+    rangeWrap.appendChild(rangelbl);
     var endIn=document.createElement("input"); endIn.type="date"; endIn.className="rangeend";
     endIn.min=iso;
     endIn.value = grouped ? card.end : "";
