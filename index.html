@@ -133,9 +133,14 @@ body{margin:0; background:var(--page); color:var(--ink); font-family:var(--sans)
   appearance:none; border:0; background:transparent; color:var(--ink-3); cursor:pointer;
   font-size:12px; line-height:1; padding:4px 5px; border-radius:4px;
 }
-.blktools button:hover{background:var(--band); color:var(--ink)}
-.blktools button.rm:hover{color:var(--red)}
-@media (max-width:640px){ .blktools{opacity:1} }
+@media (hover:hover){
+  .blktools button:hover{background:var(--band); color:var(--ink)}
+  .blktools button.rm:hover{color:var(--red)}
+}
+@media (max-width:640px){
+  .blktools{opacity:1}
+  .blktools button{color:var(--ph); opacity:.55}
+}
 
 /* flight */
 .flight{background:var(--flight-bg); border-radius:6px; padding:12px 14px; display:grid; grid-template-columns:1fr 30px 1fr 1.2fr; gap:6px 11px; align-items:center}
